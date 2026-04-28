@@ -1,1141 +1,1526 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>Factory Escape 🏭</title>
-<style>
-@import url('https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;700;900&display=swap');
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Factory Escape 🏭</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;700;900&display=swap');
 
-:root {
-  --bg: #1a1a2e; --bg2: #16213e; --panel: #0f3460;
-  --cyan: #00d4ff; --yellow: #ffd60a; --orange: #ff6b35;
-  --red: #ff2d55; --green: #06ffa5; --pink: #ff006e;
-  --white: #f0f4ff; --gray: #8892a4;
-}
+        :root {
+            --bg: #1a1a2e;
+            --bg2: #16213e;
+            --panel: #0f3460;
+            --cyan: #00d4ff;
+            --yellow: #ffd60a;
+            --orange: #ff6b35;
+            --red: #ff2d55;
+            --green: #06ffa5;
+            --pink: #ff006e;
+            --white: #f0f4ff;
+            --gray: #8892a4;
+        }
 
-* { margin:0; padding:0; box-sizing:border-box; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-body {
-  background: var(--bg);
-  font-family: 'Nunito', sans-serif;
-  min-height: 100vh;
-  display: flex; flex-direction: column;
-  align-items: center; justify-content: center;
-  overflow: hidden;
-}
+        body {
+            background: var(--bg);
+            font-family: 'Nunito', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
 
-h1.title {
-  font-family: 'Fredoka One', cursive;
-  color: var(--cyan);
-  font-size: clamp(1.2rem, 3vw, 1.6rem);
-  letter-spacing: 2px;
-  text-shadow: 0 0 20px rgba(0,212,255,0.6);
-  margin-bottom: 6px; text-align: center;
-}
+        h1.title {
+            font-family: 'Fredoka One', cursive;
+            color: var(--cyan);
+            font-size: clamp(1.2rem, 3vw, 1.6rem);
+            letter-spacing: 2px;
+            text-shadow: 0 0 20px rgba(0, 212, 255, 0.6);
+            margin-bottom: 6px;
+            text-align: center;
+        }
 
-#outer {
-  display: flex; gap: 12px; align-items: flex-start;
-  width: min(1100px, 99vw); padding: 6px;
-}
+        #outer {
+            display: flex;
+            gap: 12px;
+            align-items: flex-start;
+            width: min(1100px, 99vw);
+            padding: 6px;
+        }
 
-#game-side {
-  flex: 1; min-width: 0; display: flex;
-  flex-direction: column; gap: 6px;
-}
+        #game-side {
+            flex: 1;
+            min-width: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
 
-#hud {
-  display: flex; justify-content: space-between; align-items: center;
-  padding: 5px 12px;
-  background: rgba(255,255,255,0.05);
-  border-radius: 12px; border: 1px solid rgba(0,212,255,0.2);
-}
-.hud-pill {
-  font-family: 'Fredoka One', cursive; font-size: 1rem;
-  color: var(--white); display: flex; align-items: center; gap: 5px;
-}
-.hud-pill span { color: var(--cyan); }
+        #hud {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 5px 12px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            border: 1px solid rgba(0, 212, 255, 0.2);
+        }
 
-#game-wrap {
-  position: relative; width: 100%; aspect-ratio: 16/9;
-  border-radius: 16px; overflow: hidden;
-  border: 3px solid rgba(0,212,255,0.3);
-  box-shadow: 0 0 40px rgba(0,212,255,0.15), inset 0 0 60px rgba(0,0,0,0.4);
-}
-canvas#gc { width:100%; height:100%; display:block; }
+        .hud-pill {
+            font-family: 'Fredoka One', cursive;
+            font-size: 1rem;
+            color: var(--white);
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
 
-.screen {
-  position: absolute; inset: 0;
-  display: flex; flex-direction: column;
-  align-items: center; justify-content: center;
-  background: rgba(10,10,30,0.88);
-  z-index: 30; gap: 10px;
-  backdrop-filter: blur(6px); border-radius: 13px;
-}
-.screen h2 {
-  font-family: 'Fredoka One', cursive;
-  font-size: clamp(1.4rem, 4vw, 2.2rem);
-  color: var(--cyan);
-  text-shadow: 0 0 30px rgba(0,212,255,0.8);
-  text-align: center; padding: 0 20px;
-}
-.screen p {
-  color: var(--gray); font-size: clamp(0.75rem, 2vw, 0.9rem);
-  text-align: center; max-width: 360px; line-height: 1.5; padding: 0 16px;
-}
-.btn {
-  background: var(--cyan); color: #0a0a1e; border: none;
-  border-radius: 30px; padding: 10px 28px;
-  font-family: 'Fredoka One', cursive; font-size: 1.1rem;
-  cursor: pointer;
-  box-shadow: 0 5px 0 #007a99, 0 8px 20px rgba(0,212,255,0.4);
-  transition: transform 0.1s, box-shadow 0.1s;
-}
-.btn:hover { transform: translateY(-2px); }
-.btn:active { transform: translateY(3px); box-shadow: 0 2px 0 #007a99; }
+        .hud-pill span {
+            color: var(--cyan);
+        }
 
-#powerup-bar {
-  display: flex; gap: 8px; padding: 4px 10px;
-  background: rgba(255,255,255,0.04);
-  border-radius: 10px; border: 1px solid rgba(255,255,255,0.08);
-  min-height: 32px; align-items: center;
-}
-.pu-indicator {
-  background: rgba(255,255,255,0.08); border-radius: 8px;
-  padding: 2px 8px; display: flex; align-items: center; gap: 4px;
-  font-family: 'Fredoka One', cursive; font-size: 0.85rem;
-  animation: puPulse 0.8s ease-in-out infinite alternate;
-}
-@keyframes puPulse { from{opacity:0.7} to{opacity:1} }
+        #game-wrap {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 16/9;
+            border-radius: 16px;
+            overflow: hidden;
+            border: 3px solid rgba(0, 212, 255, 0.3);
+            box-shadow: 0 0 40px rgba(0, 212, 255, 0.15), inset 0 0 60px rgba(0, 0, 0, 0.4);
+        }
 
-#pops {
-  position: absolute; inset: 0;
-  pointer-events: none; z-index: 20;
-}
-.pop {
-  position: absolute; font-family: 'Fredoka One', cursive;
-  font-size: 1.1rem; pointer-events: none;
-  animation: popFloat 0.9s ease-out forwards; white-space: nowrap;
-}
-@keyframes popFloat {
-  0%  { opacity:1; transform:translateY(0) scale(1.1); }
-  100%{ opacity:0; transform:translateY(-50px) scale(0.8); }
-}
+        canvas#gc {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
 
-/* ── TINKER PANEL ── */
-#tinker-panel {
-  width: 230px; flex-shrink: 0;
-  background: var(--bg2); border-radius: 16px;
-  border: 2px solid rgba(0,212,255,0.2);
-  padding: 12px; display: flex; flex-direction: column; gap: 10px;
-  box-shadow: 0 0 30px rgba(0,0,0,0.4);
-  max-height: min(560px, 90vh); overflow-y: auto;
-}
-#tinker-panel::-webkit-scrollbar { width:4px; }
-#tinker-panel::-webkit-scrollbar-thumb { background:rgba(0,212,255,0.3); border-radius:4px; }
+        .screen {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: rgba(10, 10, 30, 0.88);
+            z-index: 30;
+            gap: 10px;
+            backdrop-filter: blur(6px);
+            border-radius: 13px;
+        }
 
-.tinker-title { font-family:'Fredoka One',cursive; color:var(--cyan); font-size:1rem; text-align:center; letter-spacing:1px; text-shadow:0 0 10px rgba(0,212,255,0.4); }
-.tinker-subtitle { font-size:0.7rem; color:var(--gray); text-align:center; margin-top:-6px; line-height:1.4; }
-.tinker-section { background:rgba(255,255,255,0.03); border-radius:10px; padding:8px 10px; border:1px solid rgba(255,255,255,0.06); }
-.section-label { font-family:'Fredoka One',cursive; font-size:0.75rem; color:var(--yellow); letter-spacing:1px; text-transform:uppercase; margin-bottom:6px; }
-.var-row { margin-bottom:8px; }
-.var-name { font-family:'Nunito',monospace; font-size:0.72rem; color:var(--cyan); font-weight:700; }
-.var-comment { font-size:0.65rem; color:var(--gray); margin-bottom:3px; line-height:1.3; }
-.var-comment em { color:#aab; font-style:normal; }
-.slider-wrap { display:flex; align-items:center; gap:6px; }
-input[type=range] { flex:1; -webkit-appearance:none; height:5px; border-radius:3px; background:rgba(255,255,255,0.1); outline:none; }
-input[type=range]::-webkit-slider-thumb { -webkit-appearance:none; width:14px; height:14px; border-radius:50%; background:var(--cyan); cursor:pointer; box-shadow:0 0 8px rgba(0,212,255,0.6); }
-.val-badge { font-family:'Fredoka One',cursive; font-size:0.8rem; color:var(--white); background:rgba(0,212,255,0.15); border-radius:6px; padding:1px 6px; min-width:32px; text-align:center; }
-.toggle-wrap { display:flex; align-items:center; gap:8px; }
-.toggle { position:relative; width:36px; height:20px; }
-.toggle input { opacity:0; width:0; height:0; }
-.toggle-slider { position:absolute; inset:0; background:rgba(255,255,255,0.1); border-radius:20px; cursor:pointer; transition:0.3s; }
-.toggle input:checked + .toggle-slider { background:var(--cyan); }
-.toggle-slider::before { content:''; position:absolute; width:14px; height:14px; left:3px; top:3px; background:white; border-radius:50%; transition:0.3s; }
-.toggle input:checked + .toggle-slider::before { transform:translateX(16px); }
-.toggle-label { font-size:0.72rem; color:var(--white); }
-input[type=text].name-input { background:rgba(255,255,255,0.06); border:1px solid rgba(0,212,255,0.3); border-radius:8px; color:var(--white); font-family:'Nunito',sans-serif; font-size:0.8rem; padding:4px 8px; width:100%; outline:none; transition:border-color 0.2s; }
-input[type=text].name-input:focus { border-color:var(--cyan); }
-.apply-btn { background:var(--yellow); color:#1a1a2e; border:none; border-radius:10px; padding:8px; font-family:'Fredoka One',cursive; font-size:0.9rem; cursor:pointer; width:100%; box-shadow:0 3px 0 #a08800; transition:transform 0.1s; }
-.apply-btn:hover { transform:translateY(-1px); }
-.apply-btn:active { transform:translateY(2px); box-shadow:0 1px 0 #a08800; }
-.code-hint { font-size:0.62rem; color:rgba(136,146,164,0.6); text-align:center; line-height:1.4; }
+        .screen h2 {
+            font-family: 'Fredoka One', cursive;
+            font-size: clamp(1.4rem, 4vw, 2.2rem);
+            color: var(--cyan);
+            text-shadow: 0 0 30px rgba(0, 212, 255, 0.8);
+            text-align: center;
+            padding: 0 20px;
+        }
 
-@media (max-width:640px) {
-  #outer { flex-direction:column; }
-  #tinker-panel { width:100%; max-height:280px; }
-}
-</style>
+        .screen p {
+            color: var(--gray);
+            font-size: clamp(0.75rem, 2vw, 0.9rem);
+            text-align: center;
+            max-width: 360px;
+            line-height: 1.5;
+            padding: 0 16px;
+        }
+
+        .btn {
+            background: var(--cyan);
+            color: #0a0a1e;
+            border: none;
+            border-radius: 30px;
+            padding: 10px 28px;
+            font-family: 'Fredoka One', cursive;
+            font-size: 1.1rem;
+            cursor: pointer;
+            box-shadow: 0 5px 0 #007a99, 0 8px 20px rgba(0, 212, 255, 0.4);
+            transition: transform 0.1s, box-shadow 0.1s;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .btn:active {
+            transform: translateY(3px);
+            box-shadow: 0 2px 0 #007a99;
+        }
+
+        #powerup-bar {
+            display: flex;
+            gap: 8px;
+            padding: 4px 10px;
+            background: rgba(255, 255, 255, 0.04);
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            min-height: 32px;
+            align-items: center;
+        }
+
+        .pu-indicator {
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 8px;
+            padding: 2px 8px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-family: 'Fredoka One', cursive;
+            font-size: 0.85rem;
+            animation: puPulse 0.8s ease-in-out infinite alternate;
+        }
+
+        @keyframes puPulse {
+            from {
+                opacity: 0.7
+            }
+
+            to {
+                opacity: 1
+            }
+        }
+
+        #pops {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            z-index: 20;
+        }
+
+        .pop {
+            position: absolute;
+            font-family: 'Fredoka One', cursive;
+            font-size: 1.1rem;
+            pointer-events: none;
+            animation: popFloat 0.9s ease-out forwards;
+            white-space: nowrap;
+        }
+
+        @keyframes popFloat {
+            0% {
+                opacity: 1;
+                transform: translateY(0) scale(1.1);
+            }
+
+            100% {
+                opacity: 0;
+                transform: translateY(-50px) scale(0.8);
+            }
+        }
+
+        /* ── TINKER PANEL ── */
+        #tinker-panel {
+            width: 230px;
+            flex-shrink: 0;
+            background: var(--bg2);
+            border-radius: 16px;
+            border: 2px solid rgba(0, 212, 255, 0.2);
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            box-shadow: 0 0 30px rgba(0, 0, 0, 0.4);
+            max-height: min(560px, 90vh);
+            overflow-y: auto;
+        }
+
+        #tinker-panel::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        #tinker-panel::-webkit-scrollbar-thumb {
+            background: rgba(0, 212, 255, 0.3);
+            border-radius: 4px;
+        }
+
+        .tinker-title {
+            font-family: 'Fredoka One', cursive;
+            color: var(--cyan);
+            font-size: 1rem;
+            text-align: center;
+            letter-spacing: 1px;
+            text-shadow: 0 0 10px rgba(0, 212, 255, 0.4);
+        }
+
+        .tinker-subtitle {
+            font-size: 0.7rem;
+            color: var(--gray);
+            text-align: center;
+            margin-top: -6px;
+            line-height: 1.4;
+        }
+
+        .tinker-section {
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 10px;
+            padding: 8px 10px;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+        }
+
+        .section-label {
+            font-family: 'Fredoka One', cursive;
+            font-size: 0.75rem;
+            color: var(--yellow);
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            margin-bottom: 6px;
+        }
+
+        .var-row {
+            margin-bottom: 8px;
+        }
+
+        .var-name {
+            font-family: 'Nunito', monospace;
+            font-size: 0.72rem;
+            color: var(--cyan);
+            font-weight: 700;
+        }
+
+        .var-comment {
+            font-size: 0.65rem;
+            color: var(--gray);
+            margin-bottom: 3px;
+            line-height: 1.3;
+        }
+
+        .var-comment em {
+            color: #aab;
+            font-style: normal;
+        }
+
+        .slider-wrap {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        input[type=range] {
+            flex: 1;
+            -webkit-appearance: none;
+            height: 5px;
+            border-radius: 3px;
+            background: rgba(255, 255, 255, 0.1);
+            outline: none;
+        }
+
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: var(--cyan);
+            cursor: pointer;
+            box-shadow: 0 0 8px rgba(0, 212, 255, 0.6);
+        }
+
+        .val-badge {
+            font-family: 'Fredoka One', cursive;
+            font-size: 0.8rem;
+            color: var(--white);
+            background: rgba(0, 212, 255, 0.15);
+            border-radius: 6px;
+            padding: 1px 6px;
+            min-width: 32px;
+            text-align: center;
+        }
+
+        .toggle-wrap {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .toggle {
+            position: relative;
+            width: 36px;
+            height: 20px;
+        }
+
+        .toggle input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .toggle-slider {
+            position: absolute;
+            inset: 0;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .toggle input:checked+.toggle-slider {
+            background: var(--cyan);
+        }
+
+        .toggle-slider::before {
+            content: '';
+            position: absolute;
+            width: 14px;
+            height: 14px;
+            left: 3px;
+            top: 3px;
+            background: white;
+            border-radius: 50%;
+            transition: 0.3s;
+        }
+
+        .toggle input:checked+.toggle-slider::before {
+            transform: translateX(16px);
+        }
+
+        .toggle-label {
+            font-size: 0.72rem;
+            color: var(--white);
+        }
+
+        input[type=text].name-input {
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(0, 212, 255, 0.3);
+            border-radius: 8px;
+            color: var(--white);
+            font-family: 'Nunito', sans-serif;
+            font-size: 0.8rem;
+            padding: 4px 8px;
+            width: 100%;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        input[type=text].name-input:focus {
+            border-color: var(--cyan);
+        }
+
+        .apply-btn {
+            background: var(--yellow);
+            color: #1a1a2e;
+            border: none;
+            border-radius: 10px;
+            padding: 8px;
+            font-family: 'Fredoka One', cursive;
+            font-size: 0.9rem;
+            cursor: pointer;
+            width: 100%;
+            box-shadow: 0 3px 0 #a08800;
+            transition: transform 0.1s;
+        }
+
+        .apply-btn:hover {
+            transform: translateY(-1px);
+        }
+
+        .apply-btn:active {
+            transform: translateY(2px);
+            box-shadow: 0 1px 0 #a08800;
+        }
+
+        .code-hint {
+            font-size: 0.62rem;
+            color: rgba(136, 146, 164, 0.6);
+            text-align: center;
+            line-height: 1.4;
+        }
+
+        @media (max-width:640px) {
+            #outer {
+                flex-direction: column;
+            }
+
+            #tinker-panel {
+                width: 100%;
+                max-height: 280px;
+            }
+        }
+    </style>
 </head>
+
 <body>
 
-<div id="outer">
-  <div id="game-side">
-    <h1 class="title">🏭 FACTORY ESCAPE</h1>
-    <div id="hud">
-      <div class="hud-pill">❤️ <span id="lives-el">5</span></div>
-      <div class="hud-pill">⭐ <span id="score-el">0</span></div>
-      <div class="hud-pill">🏃 <span id="name-el">Runner</span></div>
-      <div class="hud-pill">📏 <span id="dist-el">0</span>m</div>
+    <div id="outer">
+        <div id="game-side">
+            <h1 class="title">🏭 FACTORY ESCAPE</h1>
+            <div id="hud">
+                <div class="hud-pill">❤️ <span id="lives-el">5</span></div>
+                <div class="hud-pill">⭐ <span id="score-el">0</span></div>
+                <div class="hud-pill">🏃 <span id="name-el">Runner</span></div>
+                <div class="hud-pill">📏 <span id="dist-el">0</span>m</div>
+            </div>
+            <div id="game-wrap">
+                <canvas id="gc"></canvas>
+                <div id="pops"></div>
+                <div class="screen" id="screen-start">
+                    <h2>🏭 Factory Escape</h2>
+                    <p>You're trapped! The factory scrolls automatically — just jump at the right moment!<br><br>
+                        <strong style="color:var(--cyan)">Click / Tap / Space</strong> to jump<br>
+                        <strong style="color:var(--cyan)">Again in air</strong> for double jump 🌟<br><br>
+                        Watch for the <strong style="color:var(--red)">red glow</strong> — enemies flash when you're
+                        close!<br>
+                        Collect power-ups: 🔥❄️⚡💨
+                    </p>
+                    <button class="btn" id="btn-start">ESCAPE! 🚀</button>
+                </div>
+                <div class="screen" id="screen-end" style="display:none">
+                    <h2 id="end-title"></h2>
+                    <p id="end-msg"></p>
+                    <button class="btn" id="btn-restart">TRY AGAIN 🚀</button>
+                </div>
+            </div>
+            <div id="powerup-bar" style="display:none"></div>
+        </div>
+
+        <div id="tinker-panel">
+            <div class="tinker-title">🔧 TINKER MODE</div>
+            <div class="tinker-subtitle">Real code variables! Change them and hit Apply.</div>
+
+            <div class="tinker-section">
+                <div class="section-label">⚙️ Character</div>
+                <div class="var-row">
+                    <div class="var-name">RUNNER_NAME</div>
+                    <div class="var-comment"><em>// string — shown in the HUD</em></div>
+                    <input type="text" class="name-input" id="t-name" value="Runner" maxlength="12">
+                </div>
+                <div class="var-row">
+                    <div class="var-name">RUNNER_COLOR</div>
+                    <div class="var-comment"><em>// hex colour. Try: #ff006e #06ffa5 #ffd60a</em></div>
+                    <input type="text" class="name-input" id="t-color" value="#00d4ff" maxlength="20">
+                </div>
+            </div>
+
+            <div class="tinker-section">
+                <div class="section-label">🎮 Movement</div>
+                <div class="var-row">
+                    <div class="var-name">JUMP_FORCE</div>
+                    <div class="var-comment"><em>// runner.vy = -JUMP_FORCE (negative = up!). Try 8 (tiny) or 18
+                            (huge).</em></div>
+                    <div class="slider-wrap">
+                        <input type="range" id="t-jump" min="8" max="18" value="13" step="0.5">
+                        <div class="val-badge" id="t-jump-val">13</div>
+                    </div>
+                </div>
+                <div class="var-row">
+                    <div class="var-name">SCROLL_SPEED</div>
+                    <div class="var-comment"><em>// Constant world scroll (px/frame). Runner rides it like a conveyor —
+                            jumping is purely vertical.</em></div>
+                    <div class="slider-wrap">
+                        <input type="range" id="t-speed" min="0.5" max="5" value="2.2" step="0.1">
+                        <div class="val-badge" id="t-speed-val">2.2</div>
+                    </div>
+                </div>
+                <div class="var-row">
+                    <div class="var-name">GRAVITY</div>
+                    <div class="var-comment"><em>// runner.vy += GRAVITY each frame. Low = floaty moon. High = heavy
+                            boots.</em></div>
+                    <div class="slider-wrap">
+                        <input type="range" id="t-gravity" min="0.2" max="1.2" value="0.42" step="0.05">
+                        <div class="val-badge" id="t-gravity-val">0.42</div>
+                    </div>
+                </div>
+                <div class="var-row">
+                    <div class="var-name">DOUBLE_JUMP</div>
+                    <div class="var-comment"><em>// boolean feature flag — true = second jump allowed mid-air.</em>
+                    </div>
+                    <div class="toggle-wrap">
+                        <label class="toggle"><input type="checkbox" id="t-doublejump" checked><span
+                                class="toggle-slider"></span></label>
+                        <span class="toggle-label">enabled (true)</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="tinker-section">
+                <div class="section-label">⚡ Enemies</div>
+                <div class="var-row">
+                    <div class="var-name">ENEMY_SPEED</div>
+                    <div class="var-comment"><em>// Patrol speed (px/frame). 0 = frozen solid. 3 = very zippy.</em>
+                    </div>
+                    <div class="slider-wrap">
+                        <input type="range" id="t-enemy" min="0" max="3" value="1.0" step="0.1">
+                        <div class="val-badge" id="t-enemy-val">1.0</div>
+                    </div>
+                </div>
+                <div class="var-row">
+                    <div class="var-name">ENEMY_HIT_RADIUS</div>
+                    <div class="var-comment"><em>// Collision distance (px). Bigger = brutal. Smaller = pixel-perfect.
+                            Default 18.</em></div>
+                    <div class="slider-wrap">
+                        <input type="range" id="t-hitradius" min="6" max="45" value="18" step="1">
+                        <div class="val-badge" id="t-hitradius-val">18</div>
+                    </div>
+                </div>
+                <div class="var-row">
+                    <div class="var-name">LIVES</div>
+                    <div class="var-comment"><em>// Starting hearts. Apply then Play Again to see the change.</em></div>
+                    <div class="slider-wrap">
+                        <input type="range" id="t-lives" min="1" max="10" value="5" step="1">
+                        <div class="val-badge" id="t-lives-val">5</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="tinker-section">
+                <div class="section-label">🔥 Power-ups</div>
+                <div class="var-row">
+                    <div class="var-name">FIREBALL_DURATION</div>
+                    <div class="var-comment"><em>// Seconds 🔥 lasts. Stored internally as seconds × 60 frames.</em>
+                    </div>
+                    <div class="slider-wrap">
+                        <input type="range" id="t-fire" min="3" max="20" value="8" step="1">
+                        <div class="val-badge" id="t-fire-val">8</div>
+                    </div>
+                </div>
+                <div class="var-row">
+                    <div class="var-name">FIREBALL_SPEED</div>
+                    <div class="var-comment"><em>// fb.wx += FIREBALL_SPEED each frame. Fast = easy to hit. Slow = lead
+                            your aim!</em></div>
+                    <div class="slider-wrap">
+                        <input type="range" id="t-fbspeed" min="2" max="22" value="8" step="1">
+                        <div class="val-badge" id="t-fbspeed-val">8</div>
+                    </div>
+                </div>
+                <div class="var-row">
+                    <div class="var-name">FREEZE_DURATION</div>
+                    <div class="var-comment"><em>// Seconds enemies stay bright-blue and frozen after ❄️.</em></div>
+                    <div class="slider-wrap">
+                        <input type="range" id="t-freeze" min="2" max="15" value="6" step="1">
+                        <div class="val-badge" id="t-freeze-val">6</div>
+                    </div>
+                </div>
+                <div class="var-row">
+                    <div class="var-name">INVINCIBLE_DURATION</div>
+                    <div class="var-comment"><em>// Seconds of invincibility after ⚡. Runner flickers every 5th
+                            frame.</em></div>
+                    <div class="slider-wrap">
+                        <input type="range" id="t-inv" min="3" max="20" value="10" step="1">
+                        <div class="val-badge" id="t-inv-val">10</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="tinker-section">
+                <div class="section-label">🧪 Advanced</div>
+                <div class="var-row">
+                    <div class="var-name">CAMERA_LAG</div>
+                    <div class="var-comment"><em>// camX += gap × CAMERA_LAG each frame (lerping). 0.07 = silky. 1.0 =
+                            instant snap.</em></div>
+                    <div class="slider-wrap">
+                        <input type="range" id="t-camlag" min="0.02" max="1.0" value="0.07" step="0.02">
+                        <div class="val-badge" id="t-camlag-val">0.07</div>
+                    </div>
+                </div>
+                <div class="var-row">
+                    <div class="var-name">SQUISH_AMOUNT</div>
+                    <div class="var-comment"><em>// Y scale on landing. 1.0 = no squish. 0.5 = pancake. Disney's
+                            principle #1!</em></div>
+                    <div class="slider-wrap">
+                        <input type="range" id="t-squish" min="0.55" max="1.0" value="0.65" step="0.05">
+                        <div class="val-badge" id="t-squish-val">0.65</div>
+                    </div>
+                </div>
+                <div class="var-row">
+                    <div class="var-name">PARTICLE_COUNT</div>
+                    <div class="var-comment"><em>// Sparkles on hit. 12 = default. 50 = explosion! 1 = one lonely
+                            dot.</em></div>
+                    <div class="slider-wrap">
+                        <input type="range" id="t-particles" min="1" max="50" value="12" step="1">
+                        <div class="val-badge" id="t-particles-val">12</div>
+                    </div>
+                </div>
+                <div class="var-row">
+                    <div class="var-name">SCORE_PER_FIREBALL</div>
+                    <div class="var-comment"><em>// score += SCORE_PER_FIREBALL per fireball hit. Try 1 or 999!</em>
+                    </div>
+                    <div class="slider-wrap">
+                        <input type="range" id="t-fbscore" min="1" max="999" value="50" step="1">
+                        <div class="val-badge" id="t-fbscore-val">50</div>
+                    </div>
+                </div>
+            </div>
+
+            <button class="apply-btn" id="btn-apply">⚡ APPLY CHANGES</button>
+            <div class="code-hint">💡 Real JS variables — search "TINKERABLE VARIABLES" in the source to find them all.
+                🧑‍💻</div>
+        </div>
     </div>
-    <div id="game-wrap">
-      <canvas id="gc"></canvas>
-      <div id="pops"></div>
-      <div class="screen" id="screen-start">
-        <h2>🏭 Factory Escape</h2>
-        <p>You're trapped! The factory scrolls automatically — just jump at the right moment!<br><br>
-          <strong style="color:var(--cyan)">Click / Tap / Space</strong> to jump<br>
-          <strong style="color:var(--cyan)">Again in air</strong> for double jump 🌟<br><br>
-          Watch for the <strong style="color:var(--red)">red glow</strong> — enemies flash when you're close!<br>
-          Collect power-ups: 🔥❄️⚡💨</p>
-        <button class="btn" id="btn-start">ESCAPE! 🚀</button>
-      </div>
-      <div class="screen" id="screen-end" style="display:none">
-        <h2 id="end-title"></h2>
-        <p id="end-msg"></p>
-        <button class="btn" id="btn-restart">TRY AGAIN 🚀</button>
-      </div>
-    </div>
-    <div id="powerup-bar" style="display:none"></div>
-  </div>
-
-  <div id="tinker-panel">
-    <div class="tinker-title">🔧 TINKER MODE</div>
-    <div class="tinker-subtitle">Real code variables! Change them and hit Apply.</div>
-
-    <div class="tinker-section">
-      <div class="section-label">⚙️ Character</div>
-      <div class="var-row">
-        <div class="var-name">RUNNER_NAME</div>
-        <div class="var-comment"><em>// string — shown in the HUD</em></div>
-        <input type="text" class="name-input" id="t-name" value="Runner" maxlength="12">
-      </div>
-      <div class="var-row">
-        <div class="var-name">RUNNER_COLOR</div>
-        <div class="var-comment"><em>// hex colour. Try: #ff006e #06ffa5 #ffd60a</em></div>
-        <input type="text" class="name-input" id="t-color" value="#00d4ff" maxlength="20">
-      </div>
-    </div>
-
-    <div class="tinker-section">
-      <div class="section-label">🎮 Movement</div>
-      <div class="var-row">
-        <div class="var-name">JUMP_FORCE</div>
-        <div class="var-comment"><em>// runner.vy = -JUMP_FORCE (negative = up!). Try 8 (tiny) or 18 (huge).</em></div>
-        <div class="slider-wrap">
-          <input type="range" id="t-jump" min="8" max="18" value="13" step="0.5">
-          <div class="val-badge" id="t-jump-val">13</div>
-        </div>
-      </div>
-      <div class="var-row">
-        <div class="var-name">SCROLL_SPEED</div>
-        <div class="var-comment"><em>// Constant world scroll (px/frame). Runner rides it like a conveyor — jumping is purely vertical.</em></div>
-        <div class="slider-wrap">
-          <input type="range" id="t-speed" min="0.5" max="5" value="2.2" step="0.1">
-          <div class="val-badge" id="t-speed-val">2.2</div>
-        </div>
-      </div>
-      <div class="var-row">
-        <div class="var-name">GRAVITY</div>
-        <div class="var-comment"><em>// runner.vy += GRAVITY each frame. Low = floaty moon. High = heavy boots.</em></div>
-        <div class="slider-wrap">
-          <input type="range" id="t-gravity" min="0.2" max="1.2" value="0.42" step="0.05">
-          <div class="val-badge" id="t-gravity-val">0.42</div>
-        </div>
-      </div>
-      <div class="var-row">
-        <div class="var-name">DOUBLE_JUMP</div>
-        <div class="var-comment"><em>// boolean feature flag — true = second jump allowed mid-air.</em></div>
-        <div class="toggle-wrap">
-          <label class="toggle"><input type="checkbox" id="t-doublejump" checked><span class="toggle-slider"></span></label>
-          <span class="toggle-label">enabled (true)</span>
-        </div>
-      </div>
-    </div>
-
-    <div class="tinker-section">
-      <div class="section-label">⚡ Enemies</div>
-      <div class="var-row">
-        <div class="var-name">ENEMY_SPEED</div>
-        <div class="var-comment"><em>// Patrol speed (px/frame). 0 = frozen solid. 3 = very zippy.</em></div>
-        <div class="slider-wrap">
-          <input type="range" id="t-enemy" min="0" max="3" value="1.0" step="0.1">
-          <div class="val-badge" id="t-enemy-val">1.0</div>
-        </div>
-      </div>
-      <div class="var-row">
-        <div class="var-name">ENEMY_HIT_RADIUS</div>
-        <div class="var-comment"><em>// Collision distance (px). Bigger = brutal. Smaller = pixel-perfect. Default 18.</em></div>
-        <div class="slider-wrap">
-          <input type="range" id="t-hitradius" min="6" max="45" value="18" step="1">
-          <div class="val-badge" id="t-hitradius-val">18</div>
-        </div>
-      </div>
-      <div class="var-row">
-        <div class="var-name">LIVES</div>
-        <div class="var-comment"><em>// Starting hearts. Apply then Play Again to see the change.</em></div>
-        <div class="slider-wrap">
-          <input type="range" id="t-lives" min="1" max="10" value="5" step="1">
-          <div class="val-badge" id="t-lives-val">5</div>
-        </div>
-      </div>
-    </div>
-
-    <div class="tinker-section">
-      <div class="section-label">🔥 Power-ups</div>
-      <div class="var-row">
-        <div class="var-name">FIREBALL_DURATION</div>
-        <div class="var-comment"><em>// Seconds 🔥 lasts. Stored internally as seconds × 60 frames.</em></div>
-        <div class="slider-wrap">
-          <input type="range" id="t-fire" min="3" max="20" value="8" step="1">
-          <div class="val-badge" id="t-fire-val">8</div>
-        </div>
-      </div>
-      <div class="var-row">
-        <div class="var-name">FIREBALL_SPEED</div>
-        <div class="var-comment"><em>// fb.wx += FIREBALL_SPEED each frame. Fast = easy to hit. Slow = lead your aim!</em></div>
-        <div class="slider-wrap">
-          <input type="range" id="t-fbspeed" min="2" max="22" value="8" step="1">
-          <div class="val-badge" id="t-fbspeed-val">8</div>
-        </div>
-      </div>
-      <div class="var-row">
-        <div class="var-name">FREEZE_DURATION</div>
-        <div class="var-comment"><em>// Seconds enemies stay bright-blue and frozen after ❄️.</em></div>
-        <div class="slider-wrap">
-          <input type="range" id="t-freeze" min="2" max="15" value="6" step="1">
-          <div class="val-badge" id="t-freeze-val">6</div>
-        </div>
-      </div>
-      <div class="var-row">
-        <div class="var-name">INVINCIBLE_DURATION</div>
-        <div class="var-comment"><em>// Seconds of invincibility after ⚡. Runner flickers every 5th frame.</em></div>
-        <div class="slider-wrap">
-          <input type="range" id="t-inv" min="3" max="20" value="10" step="1">
-          <div class="val-badge" id="t-inv-val">10</div>
-        </div>
-      </div>
-    </div>
-
-    <div class="tinker-section">
-      <div class="section-label">🧪 Advanced</div>
-      <div class="var-row">
-        <div class="var-name">CAMERA_LAG</div>
-        <div class="var-comment"><em>// camX += gap × CAMERA_LAG each frame (lerping). 0.07 = silky. 1.0 = instant snap.</em></div>
-        <div class="slider-wrap">
-          <input type="range" id="t-camlag" min="0.02" max="1.0" value="0.07" step="0.02">
-          <div class="val-badge" id="t-camlag-val">0.07</div>
-        </div>
-      </div>
-      <div class="var-row">
-        <div class="var-name">SQUISH_AMOUNT</div>
-        <div class="var-comment"><em>// Y scale on landing. 1.0 = no squish. 0.5 = pancake. Disney's principle #1!</em></div>
-        <div class="slider-wrap">
-          <input type="range" id="t-squish" min="0.55" max="1.0" value="0.65" step="0.05">
-          <div class="val-badge" id="t-squish-val">0.65</div>
-        </div>
-      </div>
-      <div class="var-row">
-        <div class="var-name">PARTICLE_COUNT</div>
-        <div class="var-comment"><em>// Sparkles on hit. 12 = default. 50 = explosion! 1 = one lonely dot.</em></div>
-        <div class="slider-wrap">
-          <input type="range" id="t-particles" min="1" max="50" value="12" step="1">
-          <div class="val-badge" id="t-particles-val">12</div>
-        </div>
-      </div>
-      <div class="var-row">
-        <div class="var-name">SCORE_PER_FIREBALL</div>
-        <div class="var-comment"><em>// score += SCORE_PER_FIREBALL per fireball hit. Try 1 or 999!</em></div>
-        <div class="slider-wrap">
-          <input type="range" id="t-fbscore" min="1" max="999" value="50" step="1">
-          <div class="val-badge" id="t-fbscore-val">50</div>
-        </div>
-      </div>
-    </div>
-
-    <button class="apply-btn" id="btn-apply">⚡ APPLY CHANGES</button>
-    <div class="code-hint">💡 Real JS variables — search "TINKERABLE VARIABLES" in the source to find them all. 🧑‍💻</div>
-  </div>
-</div>
-
-<script>
-// ═══════════════════════════════════════════════
-//   FACTORY ESCAPE v2 — improved playability
-// ═══════════════════════════════════════════════
-
-const gc   = document.getElementById('gc');
-const ctx  = gc.getContext('2d');
-const wrap = document.getElementById('game-wrap');
-
-function resize() { gc.width = wrap.clientWidth; gc.height = wrap.clientHeight; }
-resize();
-window.addEventListener('resize', resize);
-
-// ══════════════════════════════════════════════════════
-//   🔧 TINKERABLE VARIABLES
-// ══════════════════════════════════════════════════════
-let CFG = {
-  // string: HUD name
-  RUNNER_NAME:         'Runner',
-  // string: CSS hex colour
-  RUNNER_COLOR:        '#00d4ff',
-
-  // number: upward jump impulse — runner.vy = -JUMP_FORCE (up = negative Y)
-  JUMP_FORCE:          13,
-  // number: constant world scroll speed (px/frame).
-  // Runner no longer gets a horizontal boost on jump — movement is purely vertical.
-  // The world scrolls at this speed and Runner is carried with it automatically.
-  SCROLL_SPEED:        2.2,
-  // number: downward acceleration each frame — runner.vy += GRAVITY
-  GRAVITY:             0.42,
-  // boolean: feature flag — second jump allowed mid-air
-  DOUBLE_JUMP:         true,
-
-  // number: enemy patrol speed (px/frame)
-  ENEMY_SPEED:         1.0,
-  // number: collision detection radius (px)
-  ENEMY_HIT_RADIUS:    18,
-  // integer: starting lives
-  LIVES:               5,
-
-  // number: seconds 🔥 power-up lasts (× 60 = frames internally)
-  FIREBALL_DURATION:   8,
-  // number: fireball travel speed (px/frame)
-  FIREBALL_SPEED:      8,
-  // number: seconds enemies stay frozen after ❄️
-  FREEZE_DURATION:     6,
-  // number: seconds of ⚡ invincibility
-  INVINCIBLE_DURATION: 10,
-
-  // number: camera lerp factor — camX += gap × CAMERA_LAG
-  CAMERA_LAG:          0.07,
-  // number: squash scale on landing (1.0 = none, 0.5 = very flat)
-  SQUISH_AMOUNT:       0.65,
-  // integer: particles spawned on hit
-  PARTICLE_COUNT:      12,
-  // number: score added per fireball hit
-  SCORE_PER_FIREBALL:  50,
-};
-
-// ── Slider wiring ─────────────────────────────────────
-['t-jump','t-speed','t-gravity','t-enemy','t-hitradius','t-lives',
- 't-fire','t-fbspeed','t-freeze','t-inv','t-camlag','t-squish',
- 't-particles','t-fbscore'].forEach(id => {
-  const el = document.getElementById(id);
-  const vl = document.getElementById(id + '-val');
-  if (el && vl) el.addEventListener('input', () => vl.textContent = el.value);
-});
-
-document.getElementById('btn-apply').addEventListener('click', () => {
-  CFG.RUNNER_NAME          = document.getElementById('t-name').value    || 'Runner';
-  CFG.RUNNER_COLOR         = document.getElementById('t-color').value   || '#00d4ff';
-  CFG.JUMP_FORCE           = parseFloat(document.getElementById('t-jump').value);
-  CFG.SCROLL_SPEED         = parseFloat(document.getElementById('t-speed').value);
-  CFG.GRAVITY              = parseFloat(document.getElementById('t-gravity').value);
-  CFG.DOUBLE_JUMP          = document.getElementById('t-doublejump').checked;
-  CFG.ENEMY_SPEED          = parseFloat(document.getElementById('t-enemy').value);
-  CFG.ENEMY_HIT_RADIUS     = parseFloat(document.getElementById('t-hitradius').value);
-  CFG.LIVES                = parseInt(document.getElementById('t-lives').value);
-  CFG.FIREBALL_DURATION    = parseInt(document.getElementById('t-fire').value);
-  CFG.FIREBALL_SPEED       = parseFloat(document.getElementById('t-fbspeed').value);
-  CFG.FREEZE_DURATION      = parseInt(document.getElementById('t-freeze').value);
-  CFG.INVINCIBLE_DURATION  = parseInt(document.getElementById('t-inv').value);
-  CFG.CAMERA_LAG           = parseFloat(document.getElementById('t-camlag').value);
-  CFG.SQUISH_AMOUNT        = parseFloat(document.getElementById('t-squish').value);
-  CFG.PARTICLE_COUNT       = parseInt(document.getElementById('t-particles').value);
-  CFG.SCORE_PER_FIREBALL   = parseInt(document.getElementById('t-fbscore').value);
-  document.getElementById('name-el').textContent = CFG.RUNNER_NAME;
-  const btn = document.getElementById('btn-apply');
-  btn.textContent = '✅ APPLIED!'; btn.style.background = '#06ffa5';
-  setTimeout(() => { btn.textContent = '⚡ APPLY CHANGES'; btn.style.background = ''; }, 900);
-});
-
-// ── State ─────────────────────────────────────────────
-let state = 'start', t = 0, camX = 0, score = 0, lives = 5, distance = 0, winFlag = false;
-let runner, platforms = [], enemies = [], pickups = [], fireballs = [], particles = [];
-let activePowerups = {};
-
-const WORLD_LEN = 6400;
-const GF = () => gc.height * 0.78;
-
-// ── World ──────────────────────────────────────────────
-// Key playability improvements vs v1:
-// 1. Ground gaps are explicitly sized and spaced — no accidental tight squeezes
-// 2. Every gap is preceded by a generous safe run-up (≥250px)
-// 3. Elevated platforms are wider and positioned so they're reachable without
-//    pixel-perfect timing
-// 4. Enemies are NEVER placed right after a gap landing — safe zones first
-// 5. Power-ups are always on reachable platforms, not floating over gaps
-function buildWorld() {
-  platforms = []; enemies = []; pickups = []; fireballs = []; particles = [];
-  activePowerups = {};
-
-  // ── Ground segments ──────────────────────────────────
-  // Each gap is clearly intentional and consistently sized (80–120px).
-  // Long safe stretches follow every hazard zone so the player can breathe.
-  const groundChunks = [
-    // ZONE 1: Tutorial — very long pad, one tiny gap
-    { x:-80,  w:500 },   // long start
-    { x: 490, w:320 },   // gap=70 (easy)
-    { x: 880, w:400 },   // safe landing, wide
-
-    // ZONE 2: First elevated section intro
-    { x:1360, w:300 },
-    { x:1740, w:340 },   // gap=80
-    { x:2160, w:300 },
-
-    // ZONE 3: Mid-game
-    { x:2540, w:280 },
-    { x:2900, w:320 },   // gap=80
-    { x:3300, w:300 },
-
-    // ZONE 4: Faster section
-    { x:3680, w:260 },
-    { x:4020, w:300 },   // gap=80
-    { x:4400, w:280 },
-
-    // ZONE 5: Final stretch — long wide runway
-    { x:4760, w:260 },
-    { x:5100, w:1400 },  // generous finish runway
-  ];
-  groundChunks.forEach(g => platforms.push({ x:g.x, yF:0.78, w:g.w, type:'ground' }));
-
-  // ── Elevated platforms — wider, more reachable ────────
-  // Each has a clear purpose: shortcut, sticker reward, or enemy vantage.
-  // Minimum width is 90px so landing doesn't feel pixel-perfect.
-  const elevated = [
-    // Zone 1 — gentle intro alts
-    { x: 280, yF:0.60, w:120, type:'conveyor' },
-    { x: 560, yF:0.52, w:110, type:'catwalk'  },
-    { x: 980, yF:0.58, w:120, type:'pipe'     },
-    { x:1180, yF:0.46, w:100, type:'catwalk'  },
-
-    // Zone 2
-    { x:1440, yF:0.60, w:120, type:'conveyor' },
-    { x:1630, yF:0.50, w:110, type:'catwalk'  },
-    { x:1900, yF:0.58, w:120, type:'pipe'     },
-    { x:2100, yF:0.46, w:110, type:'conveyor' },
-    { x:2320, yF:0.56, w:100, type:'catwalk'  },
-
-    // Zone 3
-    { x:2620, yF:0.60, w:120, type:'pipe'     },
-    { x:2820, yF:0.50, w:110, type:'conveyor' },
-    { x:3060, yF:0.58, w:120, type:'catwalk'  },
-    { x:3260, yF:0.46, w:110, type:'pipe'     },
-    { x:3480, yF:0.56, w:100, type:'conveyor' },
-
-    // Zone 4
-    { x:3760, yF:0.60, w:120, type:'catwalk'  },
-    { x:3960, yF:0.50, w:110, type:'pipe'     },
-    { x:4180, yF:0.58, w:120, type:'conveyor' },
-    { x:4380, yF:0.46, w:110, type:'catwalk'  },
-    { x:4590, yF:0.56, w:100, type:'pipe'     },
-
-    // Zone 5
-    { x:4840, yF:0.60, w:110, type:'conveyor' },
-    { x:5050, yF:0.50, w:120, type:'catwalk'  },
-  ];
-  elevated.forEach(p => platforms.push(p));
-
-  // ── Enemies — NOT placed at gap landings ──────────────
-  // Only on elevated platforms, and only in safe stretches on the ground.
-  // Every other elevated platform gets an enemy (alternating, so the player
-  // learns the pattern and can predict which ones are safe to land on).
-  elevated.filter((_, i) => i % 2 === 0).forEach(p => {
-    enemies.push({
-      x: p.x + p.w * 0.3,
-      yF: p.yF,
-      patrolX: p.x + 5, patrolW: p.w - 10,
-      dir: 1,
-      type: Math.random() > 0.5 ? 'spark' : 'drone',
-      phase: Math.random() * Math.PI * 2,
-      frozen: 0,
-    });
-  });
-
-  // Ground enemies — placed in WIDE safe zones only, never near gap edges
-  [700, 1100, 1550, 2050, 2700, 3150, 3800, 4250, 4600, 5300].forEach(ex => {
-    enemies.push({
-      x: ex, yF: 0.78,
-      patrolX: ex - 50, patrolW: 110,
-      dir: 1, type: 'drone', phase: 0, frozen: 0,
-    });
-  });
-
-  // ── Power-ups — always on reachable platforms ─────────
-  const puTypes = ['fire','freeze','invincible','speed'];
-  // Placed on every 3rd elevated platform, well centred
-  elevated.filter((_, i) => i % 3 === 1).forEach((p, i) => {
-    pickups.push({
-      x: p.x + p.w / 2,
-      yF: p.yF - 0.09,
-      type: puTypes[i % puTypes.length],
-      collected: false,
-      bobPhase: i * 0.8,
-    });
-  });
-  // A few ground-level power-ups in safe stretches
-  [220, 1000, 2300, 3500, 4700].forEach((px, i) => {
-    pickups.push({
-      x: px, yF: 0.62,
-      type: puTypes[i % puTypes.length],
-      collected: false,
-      bobPhase: i * 1.2,
-    });
-  });
-}
-
-function resetRunner() {
-  runner = {
-    x:80, y:GF()-36,
-    vx:0, vy:0, w:32, h:32,
-    onGround:false, jumpsLeft:2,
-    invincible:0, squishY:1, squishX:1,
-    dead:false,
-  };
-}
-
-// ── Coordinate helpers ────────────────────────────────
-const sx = wx => wx - camX;
-const wy = yf => gc.height * yf;
-
-// ── Drawing ───────────────────────────────────────────
-
-// Platform edge markers — striped hazard pattern at left/right edges
-// so the player can clearly see exactly where safe ground ends.
-function drawEdgeMarker(px, py, pw) {
-  const mw = 12;
-  ctx.fillStyle = 'rgba(255,45,85,0.45)';
-  for (let i = 0; i < 8; i++) {
-    if (i % 2 === 0) {
-      ctx.fillRect(px,        py + i, mw, 1);
-      ctx.fillRect(px+pw-mw,  py + i, mw, 1);
-    }
-  }
-}
-
-function drawPlatform(p) {
-  const px = sx(p.x), py = wy(p.yF);
-  const pw = p.w, ph = gc.height*(1-p.yF)+4;
-  if (px+pw < -5 || px > gc.width+5) return;
-
-  if (p.type === 'ground') {
-    ctx.fillStyle = '#2a3a5a';
-    ctx.fillRect(px, py, pw, ph);
-    ctx.fillStyle = '#4a7fc1';
-    ctx.fillRect(px, py, pw, 6);
-    ctx.fillStyle = '#6a9fd1';
-    for (let i=8; i<pw-8; i+=18) {
-      ctx.beginPath(); ctx.arc(px+i, py+3, 2.5, 0, Math.PI*2); ctx.fill();
-    }
-    drawEdgeMarker(px, py, pw);
-  } else if (p.type === 'conveyor') {
-    ctx.fillStyle = '#3a2a4a';
-    rRect(px, py, pw, ph, 4);
-    ctx.fill();
-    ctx.fillStyle = '#7a5aaa';
-    ctx.fillRect(px, py, pw, 7);
-    const offset = (t*1.5)%20;
-    ctx.fillStyle='rgba(200,160,255,0.25)';
-    for (let i=-20;i<pw+20;i+=20) ctx.fillRect(px+i+offset,py+1,10,5);
-    ctx.fillStyle='#c090ff';
-    ctx.font=`${Math.round(gc.height*0.022)}px serif`;
-    ctx.textAlign='center'; ctx.fillText('▶▶',px+pw/2,py+5);
-    drawEdgeMarker(px, py, pw);
-  } else if (p.type === 'catwalk') {
-    ctx.fillStyle='#1e3a5a'; rRect(px,py,pw,10,3); ctx.fill();
-    ctx.strokeStyle='#4a8fcc'; ctx.lineWidth=1;
-    for (let i=4;i<pw;i+=8) { ctx.beginPath(); ctx.moveTo(px+i,py); ctx.lineTo(px+i,py+10); ctx.stroke(); }
-    ctx.strokeStyle='#2a6faa'; ctx.lineWidth=2; ctx.strokeRect(px,py,pw,10);
-    drawEdgeMarker(px, py, pw);
-  } else if (p.type === 'pipe') {
-    ctx.fillStyle='#4a3020'; rRect(px,py,pw,12,6); ctx.fill();
-    ctx.fillStyle='#c08040'; ctx.fillRect(px+4,py+2,pw-8,4);
-    ctx.fillStyle='#8a5520';
-    [0.25,0.5,0.75].forEach(f => ctx.fillRect(px+pw*f-2,py,4,12));
-    drawEdgeMarker(px, py, pw);
-  }
-}
-
-function drawRunner() {
-  if (runner.dead) return;
-  if (runner.invincible>0 && Math.floor(t/5)%2===0) return;
-
-  const rx = sx(runner.x+runner.w/2), ry = runner.y+runner.h/2;
-  const col = activePowerups.invincible>0 ? '#ffd60a'
-            : activePowerups.fire>0       ? '#ff6b35'
-            : activePowerups.freeze>0     ? '#a0e8ff'
-            : CFG.RUNNER_COLOR;
-
-  ctx.save();
-  ctx.translate(rx, ry);
-  ctx.scale(runner.squishX, runner.squishY);
-  ctx.shadowColor=col; ctx.shadowBlur=18;
-
-  ctx.fillStyle=col;
-  ctx.beginPath(); ctx.ellipse(0,0,16,17,0,0,Math.PI*2); ctx.fill();
-
-  ctx.fillStyle='rgba(255,255,255,0.35)';
-  ctx.beginPath(); ctx.ellipse(-4,-6,6,4,-0.5,0,Math.PI*2); ctx.fill();
-
-  ctx.shadowBlur=0;
-  [-5,5].forEach(ex => {
-    ctx.fillStyle='white'; ctx.beginPath(); ctx.ellipse(ex,-4,5,5,0,0,Math.PI*2); ctx.fill();
-    ctx.fillStyle='#1a1a2e'; ctx.beginPath(); ctx.arc(ex+1.5,-3,2.5,0,Math.PI*2); ctx.fill();
-    ctx.fillStyle='white'; ctx.beginPath(); ctx.arc(ex+2.5,-4.5,0.8,0,Math.PI*2); ctx.fill();
-  });
-
-  ctx.strokeStyle='rgba(255,255,255,0.7)'; ctx.lineWidth=2;
-  ctx.beginPath(); ctx.arc(0,2,6,0.2,Math.PI-0.2); ctx.stroke();
-
-  if (activePowerups.fire>0) {
-    ctx.globalAlpha=0.4+Math.sin(t*0.2)*0.2; ctx.fillStyle='#ff6b35';
-    ctx.beginPath(); ctx.ellipse(0,0,22,23,0,0,Math.PI*2); ctx.fill();
-    ctx.globalAlpha=1;
-  }
-  if (activePowerups.invincible>0) {
-    for (let i=0;i<6;i++) {
-      const angle=(t*0.08)+i*(Math.PI/3);
-      ctx.fillStyle=`hsl(${i*60+t*3},100%,70%)`; ctx.globalAlpha=0.5;
-      ctx.beginPath(); ctx.arc(Math.cos(angle)*22,Math.sin(angle)*22,4,0,Math.PI*2); ctx.fill();
-    }
-    ctx.globalAlpha=1;
-  }
-  ctx.restore();
-}
-
-// Enemies — danger proximity flash
-// Pulses a red glow ring when Runner is within 2.8× the hit radius,
-// giving a clear warning BEFORE the player loses a life.
-function drawEnemy(e) {
-  const ex2 = sx(e.x), ey = wy(e.yF)-20;
-  if (ex2<-55||ex2>gc.width+55) return;
-
-  const frozen = e.frozen>0;
-  const col = frozen ? '#a0e8ff' : '#00d4ff';
-  const glowCol = frozen ? 'rgba(160,232,255,0.5)' : 'rgba(0,212,255,0.6)';
-
-  // ── Danger flash ─────────────────────────────────
-  if (runner) {
-    const dx = Math.abs(runner.x+runner.w/2 - e.x);
-    const dy = Math.abs(runner.y+runner.h/2 - (wy(e.yF)-20));
-    const dist2 = Math.sqrt(dx*dx+dy*dy);
-    const warnDist = CFG.ENEMY_HIT_RADIUS * 2.8;
-    if (dist2 < warnDist) {
-      const pulse  = 0.35 + 0.55 * Math.abs(Math.sin(t*0.20));
-      const radius = 26  + 10   * Math.abs(Math.sin(t*0.20));
-      ctx.save();
-      ctx.globalAlpha = pulse * (1 - dist2/warnDist);
-      ctx.fillStyle = '#ff2d55';
-      ctx.beginPath(); ctx.arc(ex2, ey, radius, 0, Math.PI*2); ctx.fill();
-      ctx.globalAlpha=1;
-      ctx.restore();
-    }
-  }
-
-  ctx.save();
-  ctx.translate(ex2, ey + Math.sin(t*0.08+e.phase)*3);
-
-  if (e.type==='drone') {
-    ctx.shadowColor=glowCol; ctx.shadowBlur=16;
-    ctx.fillStyle=frozen?'#4a8aaa':'#1a3a5a';
-    ctx.strokeStyle=col; ctx.lineWidth=2.5;
-    ctx.beginPath();
-    for (let i=0;i<6;i++) {
-      const a=(i/6)*Math.PI*2-Math.PI/6;
-      i===0?ctx.moveTo(Math.cos(a)*14,Math.sin(a)*14):ctx.lineTo(Math.cos(a)*14,Math.sin(a)*14);
-    }
-    ctx.closePath(); ctx.fill(); ctx.stroke();
-    ctx.save(); ctx.rotate(t*(frozen?0.01:0.05));
-    ctx.strokeStyle=col; ctx.lineWidth=1.5; ctx.globalAlpha=0.6;
-    ctx.beginPath(); ctx.arc(0,0,8,0,Math.PI*2); ctx.stroke();
-    ctx.restore();
-    ctx.shadowBlur=0; ctx.fillStyle=col;
-    ctx.beginPath(); ctx.arc(0,0,4,0,Math.PI*2); ctx.fill();
-    if (!frozen&&Math.random()>0.7) {
-      ctx.strokeStyle='#ffd60a'; ctx.lineWidth=1; ctx.globalAlpha=0.8;
-      const ang=Math.random()*Math.PI*2;
-      ctx.beginPath(); ctx.moveTo(Math.cos(ang)*14,Math.sin(ang)*14);
-      ctx.lineTo(Math.cos(ang)*22+(Math.random()-0.5)*8,Math.sin(ang)*22+(Math.random()-0.5)*8);
-      ctx.stroke();
-    }
-  } else {
-    ctx.shadowColor=glowCol; ctx.shadowBlur=20;
-    ctx.fillStyle=frozen?'#4488aa':'#ffd60a';
-    ctx.beginPath();
-    const spikes=8;
-    for (let i=0;i<spikes*2;i++) {
-      const a=(i/(spikes*2))*Math.PI*2+t*(frozen?0:0.04), r=i%2===0?14:8;
-      i===0?ctx.moveTo(Math.cos(a)*r,Math.sin(a)*r):ctx.lineTo(Math.cos(a)*r,Math.sin(a)*r);
-    }
-    ctx.closePath(); ctx.fill();
-    ctx.shadowBlur=0; ctx.fillStyle=frozen?'#a0d8f0':'#fff';
-    ctx.font='13px serif'; ctx.textAlign='center'; ctx.textBaseline='middle';
-    ctx.fillText('⚡',0,0);
-  }
-
-  if (frozen) {
-    ctx.globalAlpha=0.35; ctx.fillStyle='#c0f0ff';
-    ctx.beginPath(); ctx.arc(0,0,16,0,Math.PI*2); ctx.fill();
-    ctx.globalAlpha=1;
-  }
-  ctx.restore();
-}
-
-function drawPickup(p) {
-  if (p.collected) return;
-  const px2=sx(p.x), py2=wy(p.yF);
-  if (px2<-40||px2>gc.width+40) return;
-  const bob=Math.sin(t*0.06+p.bobPhase)*5;
-  const icons={fire:'🔥',freeze:'❄️',invincible:'⚡',speed:'💨'};
-  const cols ={fire:'#ff6b35',freeze:'#a0e8ff',invincible:'#ffd60a',speed:'#06ffa5'};
-  ctx.save();
-  ctx.translate(px2,py2+bob);
-  ctx.shadowColor=cols[p.type]; ctx.shadowBlur=20;
-  ctx.globalAlpha=0.3+Math.sin(t*0.07+p.bobPhase)*0.15;
-  ctx.fillStyle=cols[p.type];
-  ctx.beginPath(); ctx.arc(0,0,18,0,Math.PI*2); ctx.fill();
-  ctx.globalAlpha=1; ctx.shadowBlur=0;
-  ctx.font=`${Math.round(gc.height*0.07)}px serif`;
-  ctx.textAlign='center'; ctx.textBaseline='middle';
-  ctx.fillText(icons[p.type],0,0);
-  ctx.restore();
-}
-
-function drawFireballs() {
-  fireballs.forEach(fb => {
-    const fx2=sx(fb.wx);
-    ctx.save();
-    ctx.translate(fx2,fb.y);
-    ctx.shadowColor='#ff6b35'; ctx.shadowBlur=16;
-    ctx.font=`${Math.round(gc.height*0.055)}px serif`;
-    ctx.textAlign='center'; ctx.textBaseline='middle';
-    ctx.fillText('🔥',0,0);
-    ctx.restore();
-  });
-}
-
-function drawParticles() {
-  particles.forEach(p => {
-    ctx.save(); ctx.globalAlpha=p.life/p.maxLife;
-    ctx.shadowColor=p.col; ctx.shadowBlur=12; ctx.fillStyle=p.col;
-    ctx.beginPath(); ctx.arc(sx(p.wx),p.y,p.r,0,Math.PI*2); ctx.fill();
-    ctx.restore();
-  });
-}
-
-function drawBackground() {
-  const grad=ctx.createLinearGradient(0,0,0,gc.height);
-  grad.addColorStop(0,'#0d0d1f'); grad.addColorStop(0.5,'#1a1a2e'); grad.addColorStop(1,'#0a0a18');
-  ctx.fillStyle=grad; ctx.fillRect(0,0,gc.width,gc.height);
-
-  ctx.strokeStyle='rgba(74,127,193,0.12)'; ctx.lineWidth=18;
-  for (let i=0;i<6;i++) {
-    const bpx=((i*180-camX*0.15)%(gc.width+200))-100;
-    ctx.beginPath(); ctx.moveTo(bpx,0); ctx.lineTo(bpx,gc.height); ctx.stroke();
-  }
-
-  ctx.strokeStyle='rgba(0,212,255,0.04)'; ctx.lineWidth=1;
-  const gs=40, offX=(-camX*0.05)%gs;
-  for (let x=offX;x<gc.width;x+=gs) { ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,gc.height); ctx.stroke(); }
-  for (let y=0;y<gc.height;y+=gs)   { ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(gc.width,y); ctx.stroke(); }
-
-  ctx.fillStyle='rgba(255,45,85,0.08)';
-  ctx.fillRect(0,wy(0.78)+6,gc.width,gc.height);
-
-  ctx.fillStyle='#1e2e4a'; ctx.fillRect(0,0,gc.width,10);
-  ctx.strokeStyle='rgba(74,127,193,0.3)'; ctx.lineWidth=3;
-  for (let i=0;i<gc.width;i+=60) {
-    const cpx=(i-(camX*0.3)%60+60)%(gc.width+60)-30;
-    ctx.beginPath(); ctx.moveTo(cpx,0); ctx.lineTo(cpx,18+Math.sin(cpx*0.1)*6); ctx.stroke();
-    ctx.fillStyle='#2a4a7a'; ctx.beginPath(); ctx.arc(cpx,18+Math.sin(cpx*0.1)*6,5,0,Math.PI*2); ctx.fill();
-  }
-}
-
-function drawFinish() {
-  const fx=sx(WORLD_LEN-150);
-  if (fx<-80||fx>gc.width+10) return;
-  ctx.fillStyle='#06ffa5'; ctx.shadowColor='#06ffa5'; ctx.shadowBlur=30;
-  ctx.fillRect(fx,wy(0.5),50,wy(0.28)); ctx.shadowBlur=0;
-  ctx.fillStyle='#0a3a2a'; ctx.fillRect(fx+4,wy(0.5)+4,42,wy(0.28)-8);
-  ctx.fillStyle='#06ffa5';
-  ctx.font=`bold ${Math.round(gc.height*0.05)}px 'Fredoka One',cursive`;
-  ctx.textAlign='center'; ctx.textBaseline='middle';
-  ctx.fillText('EXIT',fx+25,wy(0.64));
-  ctx.font=`${Math.round(gc.height*0.08)}px serif`;
-  ctx.fillText('🚪',fx+25,wy(0.55));
-}
-
-function rRect(x,y,w,h,r) {
-  ctx.beginPath();
-  ctx.moveTo(x+r,y); ctx.lineTo(x+w-r,y);
-  ctx.quadraticCurveTo(x+w,y,x+w,y+r);
-  ctx.lineTo(x+w,y+h-r);
-  ctx.quadraticCurveTo(x+w,y+h,x+w-r,y+h);
-  ctx.lineTo(x+r,y+h);
-  ctx.quadraticCurveTo(x,y+h,x,y+h-r);
-  ctx.lineTo(x,y+r);
-  ctx.quadraticCurveTo(x,y,x+r,y);
-  ctx.closePath();
-}
-
-// ── Physics ───────────────────────────────────────────
-// Key change from v1: Runner no longer gets a horizontal boost on jump.
-// JUMP_BOOST_X is removed. Instead, the world scrolls at SCROLL_SPEED every
-// frame and Runner is carried with it. This means the player only needs to
-// decide WHEN to jump — not WHERE to aim. Much more readable and controllable.
-function updateRunner() {
-  if (runner.dead) return;
-
-  runner.vy += CFG.GRAVITY;
-
-  // Constant rightward movement — the world scrolls, Runner rides it
-  runner.x += CFG.SCROLL_SPEED;
-
-  // Speed power-up: small bonus on top of constant scroll
-  if (activePowerups.speed>0) runner.x += CFG.SCROLL_SPEED * 0.25;
-
-  runner.y += runner.vy;
-  runner.vx *= 0.85;
-
-  runner.squishY += (1-runner.squishY)*0.18;
-  runner.squishX += (1-runner.squishX)*0.18;
-  if (runner.invincible>0) runner.invincible--;
-
-  // Platform collisions
-  runner.onGround = false;
-  const feetY = runner.y+runner.h;
-  for (const p of platforms) {
-    const psy = wy(p.yF);
-    const inX = runner.x+runner.w>p.x+3 && runner.x<p.x+p.w-3;
-    const wasAbove = (runner.y+runner.h-runner.vy) <= psy+3;
-    if (inX && wasAbove && feetY>=psy && runner.vy>=0 && feetY<=psy+18) {
-      runner.y = psy-runner.h;
-      runner.vy = 0;
-      runner.onGround = true;
-      runner.jumpsLeft = CFG.DOUBLE_JUMP ? 2 : 1;
-      runner.squishY = CFG.SQUISH_AMOUNT;
-      runner.squishX = 1.3;
-      break;
-    }
-  }
-
-  if (runner.y > gc.height+60) hitEnemy();
-  if (runner.x < camX+10)     { runner.x = camX+10; }
-  if (!winFlag && runner.x > WORLD_LEN-180) { winFlag=true; setTimeout(triggerWin,500); }
-}
-
-// Camera: Runner sits at ~26% from left (was 30% in v1).
-// This gives ~74% of the screen as look-ahead — the player can see
-// upcoming platforms and enemies earlier, reducing "surprise" deaths.
-function updateCamera() {
-  const target = runner.x - gc.width*0.26;
-  camX += (target-camX)*CFG.CAMERA_LAG;
-  camX = Math.max(0, Math.min(camX, WORLD_LEN-gc.width));
-}
-
-function updateEnemies() {
-  enemies.forEach(e => {
-    if (e.frozen>0) { e.frozen--; return; }
-    e.x += CFG.ENEMY_SPEED * e.dir;
-    if (e.x > e.patrolX+e.patrolW || e.x < e.patrolX) e.dir*=-1;
-    if (runner.invincible===0 && activePowerups.invincible===0) {
-      const esx=sx(e.x), esy=wy(e.yF)-20;
-      const rsx=sx(runner.x+runner.w/2), rsy=runner.y+runner.h/2;
-      if (Math.abs(esx-rsx)<CFG.ENEMY_HIT_RADIUS && Math.abs(esy-rsy)<CFG.ENEMY_HIT_RADIUS) hitEnemy();
-    }
-  });
-}
-
-function updatePickups() {
-  pickups.forEach(p => {
-    if (p.collected) return;
-    const psx=sx(p.x), psy=wy(p.yF);
-    const rsx=sx(runner.x+runner.w/2), rsy=runner.y+runner.h/2;
-    if (Math.abs(psx-rsx)<30 && Math.abs(psy-rsy)<30) {
-      p.collected=true;
-      activatePowerup(p.type);
-      showPop(p.x,wy(p.yF),puLabel(p.type),puColor(p.type));
-    }
-  });
-}
-
-const puLabel = t2 => ({fire:'🔥 FIREBALL!',freeze:'❄️ FREEZE!',invincible:'⚡ INVINCIBLE!',speed:'💨 SPEED!'}[t2]);
-const puColor  = t2 => ({fire:'#ff6b35',freeze:'#a0e8ff',invincible:'#ffd60a',speed:'#06ffa5'}[t2]);
-
-function activatePowerup(type) {
-  const fps=60;
-  if (type==='fire')       activePowerups.fire       = CFG.FIREBALL_DURATION*fps;
-  if (type==='freeze')   { activePowerups.freeze     = CFG.FREEZE_DURATION*fps; enemies.forEach(e=>e.frozen=CFG.FREEZE_DURATION*fps); }
-  if (type==='invincible') activePowerups.invincible = CFG.INVINCIBLE_DURATION*fps;
-  if (type==='speed')      activePowerups.speed      = 8*fps;
-  updatePowerupBar();
-}
-
-function updatePowerups() {
-  Object.keys(activePowerups).forEach(k => { if (activePowerups[k]>0) activePowerups[k]--; });
-}
-
-function updatePowerupBar() {
-  const bar=document.getElementById('powerup-bar');
-  bar.style.display=''; bar.innerHTML='';
-  const labels={fire:'🔥 Fireball',freeze:'❄️ Freeze',invincible:'⚡ Invincible',speed:'💨 Speed'};
-  Object.entries(activePowerups).forEach(([k,v]) => {
-    if (v>0) {
-      const d=document.createElement('div');
-      d.className='pu-indicator'; d.textContent=`${labels[k]} ${Math.ceil(v/60)}s`;
-      d.style.color=puColor(k); bar.appendChild(d);
-    }
-  });
-}
-
-function updateFireballs() {
-  fireballs.forEach(fb => { fb.wx+=CFG.FIREBALL_SPEED; });
-  fireballs.forEach(fb => {
-    enemies.forEach(e => {
-      if (!e.destroyed && Math.abs(sx(fb.wx)-sx(e.x))<20 && Math.abs(fb.y-wy(e.yF))<20) {
-        e.frozen=CFG.FREEZE_DURATION*60;
-        spawnParticles(e.x,wy(e.yF),'#ff6b35',8);
-        fb.dead=true;
-        score+=CFG.SCORE_PER_FIREBALL;
-        showPop(e.x,wy(e.yF),`+${CFG.SCORE_PER_FIREBALL} 🔥`,'#ff6b35');
-        updateHUD2();
-      }
-    });
-  });
-  fireballs=fireballs.filter(f=>!f.dead&&sx(f.wx)<gc.width+60);
-}
-
-function updateParticles() {
-  particles.forEach(p=>{p.wx+=p.vx;p.y+=p.vy;p.vy+=0.15;p.life--;});
-  particles=particles.filter(p=>p.life>0);
-}
-
-function spawnParticles(wx,y,col,n) {
-  for (let i=0;i<n;i++) {
-    particles.push({ wx, y, vx:(Math.random()-0.5)*4, vy:Math.random()*-3-1, col, r:3+Math.random()*4, life:35, maxLife:35 });
-  }
-}
-
-function hitEnemy() {
-  if (runner.invincible>0||activePowerups.invincible>0) return;
-  lives--;
-  updateHUD2();
-  spawnParticles(runner.x+runner.w/2,runner.y+runner.h/2,CFG.RUNNER_COLOR,CFG.PARTICLE_COUNT);
-  if (lives<=0) { runner.dead=true; setTimeout(triggerDead,600); return; }
-  runner.invincible=130;
-  runner.vy=-8;
-  runner.y=GF()-36;
-  runner.x=Math.max(camX+50, runner.x-80);
-}
-
-function updateHUD2() {
-  document.getElementById('lives-el').textContent=lives;
-  document.getElementById('score-el').textContent=score;
-  document.getElementById('name-el').textContent=CFG.RUNNER_NAME;
-  document.getElementById('dist-el').textContent=Math.round(distance);
-}
-
-function showPop(wx,y,text,col='#ffd60a') {
-  const pops=document.getElementById('pops');
-  const scX=wrap.clientWidth/gc.width, scY=wrap.clientHeight/gc.height;
-  const div=document.createElement('div');
-  div.className='pop'; div.textContent=text; div.style.color=col;
-  div.style.left=(sx(wx)*scX-30)+'px'; div.style.top=(y*scY-14)+'px';
-  pops.appendChild(div); setTimeout(()=>div.remove(),900);
-}
-
-function triggerWin() {
-  state='win';
-  document.getElementById('end-title').textContent='🚪 ESCAPED!';
-  document.getElementById('end-msg').innerHTML=`${CFG.RUNNER_NAME} made it out!<br>Score: <strong>${score}</strong> pts 🏆`;
-  document.getElementById('screen-end').style.display='';
-}
-function triggerDead() {
-  state='dead';
-  document.getElementById('end-title').textContent='⚡ ZAPPED!';
-  document.getElementById('end-msg').innerHTML=`${CFG.RUNNER_NAME} got electrocuted!<br>Score: <strong>${score}</strong> pts`;
-  document.getElementById('screen-end').style.display='';
-}
-
-// Jump: purely vertical now — no horizontal boost.
-// The player's only input is timing: jump WHEN the gap arrives.
-function doJump() {
-  if (state!=='play') return;
-  if (runner.dead) return;
-  if (runner.jumpsLeft>0) {
-    runner.vy = -CFG.JUMP_FORCE;
-    runner.jumpsLeft--;
-    runner.squishY = 1.35;
-    runner.squishX = 0.75;
-    if (activePowerups.fire>0) fireballs.push({ wx:runner.x+runner.w, y:runner.y+runner.h/2, dead:false });
-  }
-}
-
-gc.addEventListener('click', doJump);
-gc.addEventListener('touchstart', e=>{ e.preventDefault(); doJump(); }, {passive:false});
-document.addEventListener('keydown', e=>{
-  if (e.code==='Space'||e.code==='ArrowUp') { e.preventDefault(); doJump(); }
-});
-
-document.getElementById('btn-start').addEventListener('click', () => {
-  document.getElementById('screen-start').style.display='none';
-  initGame();
-});
-document.getElementById('btn-restart').addEventListener('click', () => {
-  document.getElementById('screen-end').style.display='none';
-  initGame();
-});
-
-function initGame() {
-  lives=CFG.LIVES; score=0; winFlag=false; distance=0; camX=0; t=0;
-  activePowerups={};
-  buildWorld(); resetRunner();
-  state='play';
-  document.getElementById('powerup-bar').style.display='none';
-  updateHUD2();
-}
-
-function frame() {
-  t++;
-  requestAnimationFrame(frame);
-  ctx.clearRect(0,0,gc.width,gc.height);
-  drawBackground();
-
-  if (state==='start') {
-    if (!platforms.length) buildWorld();
-    platforms.forEach(drawPlatform);
-    enemies.forEach(drawEnemy);
-    pickups.forEach(drawPickup);
-    drawFinish();
-    return;
-  }
-
-  platforms.forEach(drawPlatform);
-  enemies.forEach(drawEnemy);
-  pickups.forEach(drawPickup);
-  drawFireballs();
-  drawParticles();
-  drawFinish();
-  drawRunner();
-
-  if (state!=='play') return;
-
-  updateRunner();
-  updateCamera();
-  updateEnemies();
-  updatePickups();
-  updateFireballs();
-  updateParticles();
-  updatePowerups();
-  updatePowerupBar();
-
-  distance=Math.max(distance,Math.round(runner.x/20));
-  if (t%60===0) { score++; updateHUD2(); } else updateHUD2();
-}
-
-buildWorld();
-frame();
-</script>
+
+    <script>
+        // ═══════════════════════════════════════════════
+        // PATCH: Playability + Fairness Upgrades
+        // (Coyote time, jump buffer, safer collisions, scaling, juice)
+        // ═══════════════════════════════════════════════
+
+        let jumpBuffer = 0;
+
+        const gc = document.getElementById('gc');
+        const ctx = gc.getContext('2d');
+        const wrap = document.getElementById('game-wrap');
+
+        function resize() { gc.width = wrap.clientWidth; gc.height = wrap.clientHeight; }
+        resize();
+        window.addEventListener('resize', resize);
+
+        // ══════════════════════════════════════════════════════
+        //   🔧 TINKERABLE VARIABLES
+        // ══════════════════════════════════════════════════════
+        let CFG = {
+            // string: HUD name
+            RUNNER_NAME: 'Runner',
+            // string: CSS hex colour
+            RUNNER_COLOR: '#00d4ff',
+
+            // number: upward jump impulse — runner.vy = -JUMP_FORCE (up = negative Y)
+            JUMP_FORCE: 13,
+            // number: constant world scroll speed (px/frame).
+            // Runner no longer gets a horizontal boost on jump — movement is purely vertical.
+            // The world scrolls at this speed and Runner is carried with it automatically.
+            SCROLL_SPEED: 2.2,
+            // number: downward acceleration each frame — runner.vy += GRAVITY
+            GRAVITY: 0.42,
+            // boolean: feature flag — second jump allowed mid-air
+            DOUBLE_JUMP: true,
+
+            // number: enemy patrol speed (px/frame)
+            ENEMY_SPEED: 1.0,
+            // number: collision detection radius (px)
+            ENEMY_HIT_RADIUS: 18,
+            // integer: starting lives
+            LIVES: 5,
+
+            // number: seconds 🔥 power-up lasts (× 60 = frames internally)
+            FIREBALL_DURATION: 8,
+            // number: fireball travel speed (px/frame)
+            FIREBALL_SPEED: 8,
+            // number: seconds enemies stay frozen after ❄️
+            FREEZE_DURATION: 6,
+            // number: seconds of ⚡ invincibility
+            INVINCIBLE_DURATION: 10,
+
+            // number: camera lerp factor — camX += gap × CAMERA_LAG
+            CAMERA_LAG: 0.07,
+            // number: squash scale on landing (1.0 = none, 0.5 = very flat)
+            SQUISH_AMOUNT: 0.65,
+            // integer: particles spawned on hit
+            PARTICLE_COUNT: 12,
+            // number: score added per fireball hit
+            SCORE_PER_FIREBALL: 50,
+
+            // assist mode (optional feature addition)
+            ASSIST_MODE: false,
+        };
+
+        // ── Slider wiring ─────────────────────────────────────
+        ['t-jump', 't-speed', 't-gravity', 't-enemy', 't-hitradius', 't-lives',
+            't-fire', 't-fbspeed', 't-freeze', 't-inv', 't-camlag', 't-squish',
+            't-particles', 't-fbscore'].forEach(id => {
+                const el = document.getElementById(id);
+                const vl = document.getElementById(id + '-val');
+                if (el && vl) el.addEventListener('input', () => vl.textContent = el.value);
+            });
+
+        document.getElementById('btn-apply').addEventListener('click', () => {
+            CFG.RUNNER_NAME = document.getElementById('t-name').value || 'Runner';
+            CFG.RUNNER_COLOR = document.getElementById('t-color').value || '#00d4ff';
+            CFG.JUMP_FORCE = parseFloat(document.getElementById('t-jump').value);
+            CFG.SCROLL_SPEED = parseFloat(document.getElementById('t-speed').value);
+            CFG.GRAVITY = parseFloat(document.getElementById('t-gravity').value);
+            CFG.DOUBLE_JUMP = document.getElementById('t-doublejump').checked;
+            CFG.ENEMY_SPEED = parseFloat(document.getElementById('t-enemy').value);
+            CFG.ENEMY_HIT_RADIUS = parseFloat(document.getElementById('t-hitradius').value);
+            CFG.LIVES = parseInt(document.getElementById('t-lives').value);
+            CFG.FIREBALL_DURATION = parseInt(document.getElementById('t-fire').value);
+            CFG.FIREBALL_SPEED = parseFloat(document.getElementById('t-fbspeed').value);
+            CFG.FREEZE_DURATION = parseInt(document.getElementById('t-freeze').value);
+            CFG.INVINCIBLE_DURATION = parseInt(document.getElementById('t-inv').value);
+            CFG.CAMERA_LAG = parseFloat(document.getElementById('t-camlag').value);
+            CFG.SQUISH_AMOUNT = parseFloat(document.getElementById('t-squish').value);
+            CFG.PARTICLE_COUNT = parseInt(document.getElementById('t-particles').value);
+            CFG.SCORE_PER_FIREBALL = parseInt(document.getElementById('t-fbscore').value);
+            document.getElementById('name-el').textContent = CFG.RUNNER_NAME;
+            const btn = document.getElementById('btn-apply');
+            btn.textContent = '✅ APPLIED!'; btn.style.background = '#06ffa5';
+            setTimeout(() => { btn.textContent = '⚡ APPLY CHANGES'; btn.style.background = ''; }, 900);
+        });
+
+        // ── State ─────────────────────────────────────────────
+        let state = 'start', t = 0, camX = 0, score = 0, lives = 5, distance = 0, winFlag = false;
+        let runner, platforms = [], enemies = [], pickups = [], fireballs = [], particles = [];
+        let activePowerups = {};
+
+        const WORLD_LEN = 6400;
+        const GF = () => gc.height * 0.78;
+
+        // ── World ──────────────────────────────────────────────
+        // Key playability improvements vs v1:
+        // 1. Ground gaps are explicitly sized and spaced — no accidental tight squeezes
+        // 2. Every gap is preceded by a generous safe run-up (≥250px)
+        // 3. Elevated platforms are wider and positioned so they're reachable without
+        //    pixel-perfect timing
+        // 4. Enemies are NEVER placed right after a gap landing — safe zones first
+        // 5. Power-ups are always on reachable platforms, not floating over gaps
+        // ─────────────────────────────────────────────────────
+        //   ♾️ PROCEDURAL LEVEL GENERATOR (infinite world)
+        // ─────────────────────────────────────────────────────
+        function buildWorld() {
+            platforms = []; enemies = []; pickups = []; fireballs = []; particles = [];
+            activePowerups = {};
+
+            const puTypes = ['fire', 'freeze', 'invincible', 'speed'];
+
+            let x = -80;
+            let zone = 0;
+
+            function rand(min, max) {
+                return Math.random() * (max - min) + min;
+            }
+
+            function pick(arr) {
+                return arr[Math.floor(Math.random() * arr.length)];
+            }
+
+            // difficulty curve (slow, controlled, always fair)
+            function difficulty(z) {
+                return Math.min(1, z / 25); // caps at 1
+            }
+
+            while (x < WORLD_LEN + 2000) {
+                const d = difficulty(zone);
+
+                // ── SAFE RUNWAY ─────────────────────────────
+                const safeLen = 280 + rand(0, 120) * (1 - d);
+                platforms.push({ x, yF: 0.78, w: safeLen, type: 'ground' });
+                x += safeLen;
+
+                // ── GAP (controlled scaling) ────────────────
+                const gap = 70 + d * 60 + rand(-10, 10); // max ~130
+                x += gap;
+
+                // ── LANDING PLATFORM ───────────────────────
+                const landW = 260 + rand(-40, 80);
+                platforms.push({ x, yF: 0.78, w: landW, type: 'ground' });
+
+                // safe buffer before any enemy
+                const safeBuffer = 120;
+
+                // ── ELEVATED OPTIONS ───────────────────────
+                const elevatedCount = Math.floor(rand(1, 3 + d * 2));
+                for (let i = 0; i < elevatedCount; i++) {
+                    const ex = x + rand(40, landW - 120);
+                    const ey = 0.45 + rand(0.05, 0.18);
+                    const ew = 90 + rand(0, 40);
+
+                    const plat = {
+                        x: ex,
+                        yF: ey,
+                        w: ew,
+                        type: pick(['conveyor', 'catwalk', 'pipe'])
+                    };
+                    platforms.push(plat);
+
+                    // enemy (not always)
+                    if (Math.random() < 0.5 + d * 0.3) {
+                        enemies.push({
+                            x: ex + ew * 0.3,
+                            yF: ey,
+                            patrolX: ex + 5,
+                            patrolW: ew - 10,
+                            dir: 1,
+                            type: Math.random() > 0.5 ? 'spark' : 'drone',
+                            phase: Math.random() * Math.PI * 2,
+                            frozen: 0,
+                        });
+                    }
+
+                    // pickup (clear + reachable)
+                    if (Math.random() < 0.4) {
+                        pickups.push({
+                            x: ex + ew / 2,
+                            yF: ey - 0.1,
+                            type: pick(puTypes),
+                            collected: false,
+                            bobPhase: Math.random() * 6,
+                        });
+                    }
+                }
+
+                // ── GROUND ENEMY (never near landing edge) ──
+                if (Math.random() < 0.4 + d * 0.4) {
+                    const ex = x + safeBuffer + rand(0, landW - safeBuffer * 2);
+                    enemies.push({
+                        x: ex,
+                        yF: 0.78,
+                        patrolX: ex - 50,
+                        patrolW: 100,
+                        dir: 1,
+                        type: 'drone',
+                        phase: 0,
+                        frozen: 0,
+                    });
+                }
+
+                // ── OCCASIONAL GROUND PICKUP ────────────────
+                if (Math.random() < 0.25) {
+                    pickups.push({
+                        x: x + rand(40, landW - 40),
+                        yF: 0.62,
+                        type: pick(puTypes),
+                        collected: false,
+                        bobPhase: Math.random() * 6,
+                    });
+                }
+
+                x += landW;
+
+                zone++;
+            }
+        }
+
+        function resetRunner() {
+            runner = {
+                x: 80, y: GF() - 36,
+                vx: 0, vy: 0, w: 32, h: 32,
+                onGround: false, jumpsLeft: 2,
+                invincible: 0, squishY: 1, squishX: 1,
+                dead: false,
+                coyoteTimer: 0,
+            };
+        }
+
+        // ── Coordinate helpers ────────────────────────────────
+        const sx = wx => wx - camX;
+        const wy = yf => gc.height * yf;
+
+        // ── Drawing ───────────────────────────────────────────
+
+        // Platform edge markers — striped hazard pattern at left/right edges
+        // so the player can clearly see exactly where safe ground ends.
+        function drawEdgeMarker(px, py, pw) {
+            const mw = 14;
+
+            // glow top
+            ctx.fillStyle = 'rgba(255,45,85,0.25)';
+            ctx.fillRect(px, py - 2, mw, 6);
+            ctx.fillRect(px + pw - mw, py - 2, mw, 6);
+
+            // stripes
+            ctx.fillStyle = 'rgba(255,45,85,0.6)';
+            for (let i = 0; i < 10; i++) {
+                if (i % 2 === 0) {
+                    ctx.fillRect(px, py + i, mw, 1);
+                    ctx.fillRect(px + pw - mw, py + i, mw, 1);
+                }
+            }
+        }
+
+        function drawPlatform(p) {
+            const px = sx(p.x), py = wy(p.yF);
+            const pw = p.w, ph = gc.height * (1 - p.yF) + 4;
+            if (px + pw < -5 || px > gc.width + 5) return;
+
+            if (p.type === 'ground') {
+                ctx.fillStyle = '#2a3a5a';
+                ctx.fillRect(px, py, pw, ph);
+                ctx.fillStyle = '#4a7fc1';
+                ctx.fillRect(px, py, pw, 6);
+                ctx.fillStyle = '#6a9fd1';
+                for (let i = 8; i < pw - 8; i += 18) {
+                    ctx.beginPath(); ctx.arc(px + i, py + 3, 2.5, 0, Math.PI * 2); ctx.fill();
+                }
+                drawEdgeMarker(px, py, pw);
+            } else if (p.type === 'conveyor') {
+                ctx.fillStyle = '#3a2a4a';
+                rRect(px, py, pw, ph, 4);
+                ctx.fill();
+                ctx.fillStyle = '#7a5aaa';
+                ctx.fillRect(px, py, pw, 7);
+                const offset = (t * 1.5) % 20;
+                ctx.fillStyle = 'rgba(200,160,255,0.25)';
+                for (let i = -20; i < pw + 20; i += 20) ctx.fillRect(px + i + offset, py + 1, 10, 5);
+                ctx.fillStyle = '#c090ff';
+                ctx.font = `${Math.round(gc.height * 0.022)}px serif`;
+                ctx.textAlign = 'center'; ctx.fillText('▶▶', px + pw / 2, py + 5);
+                drawEdgeMarker(px, py, pw);
+            } else if (p.type === 'catwalk') {
+                ctx.fillStyle = '#1e3a5a'; rRect(px, py, pw, 10, 3); ctx.fill();
+                ctx.strokeStyle = '#4a8fcc'; ctx.lineWidth = 1;
+                for (let i = 4; i < pw; i += 8) { ctx.beginPath(); ctx.moveTo(px + i, py); ctx.lineTo(px + i, py + 10); ctx.stroke(); }
+                ctx.strokeStyle = '#2a6faa'; ctx.lineWidth = 2; ctx.strokeRect(px, py, pw, 10);
+                drawEdgeMarker(px, py, pw);
+            } else if (p.type === 'pipe') {
+                ctx.fillStyle = '#4a3020'; rRect(px, py, pw, 12, 6); ctx.fill();
+                ctx.fillStyle = '#c08040'; ctx.fillRect(px + 4, py + 2, pw - 8, 4);
+                ctx.fillStyle = '#8a5520';
+                [0.25, 0.5, 0.75].forEach(f => ctx.fillRect(px + pw * f - 2, py, 4, 12));
+                drawEdgeMarker(px, py, pw);
+            }
+        }
+
+        function drawRunner() {
+            if (runner.dead) return;
+            if (runner.invincible > 0 && Math.floor(t / 5) % 2 === 0) return;
+
+            const rx = sx(runner.x + runner.w / 2), ry = runner.y + runner.h / 2;
+            const col = activePowerups.invincible > 0 ? '#ffd60a'
+                : activePowerups.fire > 0 ? '#ff6b35'
+                    : activePowerups.freeze > 0 ? '#a0e8ff'
+                        : CFG.RUNNER_COLOR;
+
+            ctx.save();
+            ctx.translate(rx, ry);
+            ctx.scale(runner.squishX, runner.squishY);
+            ctx.shadowColor = col; ctx.shadowBlur = 18;
+
+            ctx.fillStyle = col;
+            ctx.beginPath(); ctx.ellipse(0, 0, 16, 17, 0, 0, Math.PI * 2); ctx.fill();
+
+            ctx.fillStyle = 'rgba(255,255,255,0.35)';
+            ctx.beginPath(); ctx.ellipse(-4, -6, 6, 4, -0.5, 0, Math.PI * 2); ctx.fill();
+
+            ctx.shadowBlur = 0;
+            [-5, 5].forEach(ex => {
+                ctx.fillStyle = 'white'; ctx.beginPath(); ctx.ellipse(ex, -4, 5, 5, 0, 0, Math.PI * 2); ctx.fill();
+                ctx.fillStyle = '#1a1a2e'; ctx.beginPath(); ctx.arc(ex + 1.5, -3, 2.5, 0, Math.PI * 2); ctx.fill();
+                ctx.fillStyle = 'white'; ctx.beginPath(); ctx.arc(ex + 2.5, -4.5, 0.8, 0, Math.PI * 2); ctx.fill();
+            });
+
+            ctx.strokeStyle = 'rgba(255,255,255,0.7)'; ctx.lineWidth = 2;
+            ctx.beginPath(); ctx.arc(0, 2, 6, 0.2, Math.PI - 0.2); ctx.stroke();
+
+            if (activePowerups.fire > 0) {
+                ctx.globalAlpha = 0.4 + Math.sin(t * 0.2) * 0.2; ctx.fillStyle = '#ff6b35';
+                ctx.beginPath(); ctx.ellipse(0, 0, 22, 23, 0, 0, Math.PI * 2); ctx.fill();
+                ctx.globalAlpha = 1;
+            }
+            if (activePowerups.invincible > 0) {
+                for (let i = 0; i < 6; i++) {
+                    const angle = (t * 0.08) + i * (Math.PI / 3);
+                    ctx.fillStyle = `hsl(${i * 60 + t * 3},100%,70%)`; ctx.globalAlpha = 0.5;
+                    ctx.beginPath(); ctx.arc(Math.cos(angle) * 22, Math.sin(angle) * 22, 4, 0, Math.PI * 2); ctx.fill();
+                }
+                ctx.globalAlpha = 1;
+            }
+            ctx.restore();
+        }
+
+        // Enemies — danger proximity flash
+        // Pulses a red glow ring when Runner is within 2.8× the hit radius,
+        // giving a clear warning BEFORE the player loses a life.
+        function drawEnemy(e) {
+            const ex2 = sx(e.x), ey = wy(e.yF) - 20;
+            if (ex2 < -55 || ex2 > gc.width + 55) return;
+
+            const frozen = e.frozen > 0;
+            const col = frozen ? '#a0e8ff' : '#00d4ff';
+            const glowCol = frozen ? 'rgba(160,232,255,0.5)' : 'rgba(0,212,255,0.6)';
+
+            if (runner) {
+                const dx = e.x - runner.x;
+
+                if (dx > 0 && dx < 300) {
+                    ctx.save();
+                    ctx.globalAlpha = 0.2;
+                    ctx.fillStyle = '#ff2d55';
+                    ctx.beginPath();
+                    ctx.arc(gc.width - 20, 20, 6, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.restore();
+                }
+            }
+
+            // ── Danger flash ─────────────────────────────────
+            if (runner) {
+                const dx = Math.abs(runner.x + runner.w / 2 - e.x);
+                const dy = Math.abs(runner.y + runner.h / 2 - (wy(e.yF) - 20));
+                const dist2 = Math.sqrt(dx * dx + dy * dy);
+                const warnDist = CFG.ENEMY_HIT_RADIUS * 2.8;
+                if (dist2 < warnDist) {
+                    const pulse = 0.35 + 0.55 * Math.abs(Math.sin(t * 0.20));
+                    const radius = 26 + 10 * Math.abs(Math.sin(t * 0.20));
+                    ctx.save();
+                    ctx.globalAlpha = pulse * (1 - dist2 / warnDist);
+                    ctx.fillStyle = '#ff2d55';
+                    ctx.beginPath(); ctx.arc(ex2, ey, radius, 0, Math.PI * 2); ctx.fill();
+                    ctx.globalAlpha = 1;
+                    ctx.restore();
+                }
+            }
+
+            ctx.save();
+            ctx.translate(ex2, ey + Math.sin(t * 0.08 + e.phase) * 3);
+
+            if (e.type === 'drone') {
+                ctx.shadowColor = glowCol; ctx.shadowBlur = 16;
+                ctx.fillStyle = frozen ? '#4a8aaa' : '#1a3a5a';
+                ctx.strokeStyle = col; ctx.lineWidth = 2.5;
+                ctx.beginPath();
+                for (let i = 0; i < 6; i++) {
+                    const a = (i / 6) * Math.PI * 2 - Math.PI / 6;
+                    i === 0 ? ctx.moveTo(Math.cos(a) * 14, Math.sin(a) * 14) : ctx.lineTo(Math.cos(a) * 14, Math.sin(a) * 14);
+                }
+                ctx.closePath(); ctx.fill(); ctx.stroke();
+                ctx.save(); ctx.rotate(t * (frozen ? 0.01 : 0.05));
+                ctx.strokeStyle = col; ctx.lineWidth = 1.5; ctx.globalAlpha = 0.6;
+                ctx.beginPath(); ctx.arc(0, 0, 8, 0, Math.PI * 2); ctx.stroke();
+                ctx.restore();
+                ctx.shadowBlur = 0; ctx.fillStyle = col;
+                ctx.beginPath(); ctx.arc(0, 0, 4, 0, Math.PI * 2); ctx.fill();
+                if (!frozen && Math.random() > 0.7) {
+                    ctx.strokeStyle = '#ffd60a'; ctx.lineWidth = 1; ctx.globalAlpha = 0.8;
+                    const ang = Math.random() * Math.PI * 2;
+                    ctx.beginPath(); ctx.moveTo(Math.cos(ang) * 14, Math.sin(ang) * 14);
+                    ctx.lineTo(Math.cos(ang) * 22 + (Math.random() - 0.5) * 8, Math.sin(ang) * 22 + (Math.random() - 0.5) * 8);
+                    ctx.stroke();
+                }
+            } else {
+                ctx.shadowColor = glowCol; ctx.shadowBlur = 20;
+                ctx.fillStyle = frozen ? '#4488aa' : '#ffd60a';
+                ctx.beginPath();
+                const spikes = 8;
+                for (let i = 0; i < spikes * 2; i++) {
+                    const a = (i / (spikes * 2)) * Math.PI * 2 + t * (frozen ? 0 : 0.04), r = i % 2 === 0 ? 14 : 8;
+                    i === 0 ? ctx.moveTo(Math.cos(a) * r, Math.sin(a) * r) : ctx.lineTo(Math.cos(a) * r, Math.sin(a) * r);
+                }
+                ctx.closePath(); ctx.fill();
+                ctx.shadowBlur = 0; ctx.fillStyle = frozen ? '#a0d8f0' : '#fff';
+                ctx.font = '13px serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+                ctx.fillText('⚡', 0, 0);
+            }
+
+            if (frozen) {
+                ctx.globalAlpha = 0.35; ctx.fillStyle = '#c0f0ff';
+                ctx.beginPath(); ctx.arc(0, 0, 16, 0, Math.PI * 2); ctx.fill();
+                ctx.globalAlpha = 1;
+            }
+            ctx.restore();
+        }
+
+        function drawPickup(p) {
+            if (p.collected) return;
+            const px2 = sx(p.x), py2 = wy(p.yF);
+            if (px2 < -40 || px2 > gc.width + 40) return;
+            const bob = Math.sin(t * 0.06 + p.bobPhase) * 5;
+            const icons = { fire: '🔥', freeze: '❄️', invincible: '⚡', speed: '💨' };
+            const cols = { fire: '#ff6b35', freeze: '#a0e8ff', invincible: '#ffd60a', speed: '#06ffa5' };
+            ctx.save();
+            ctx.translate(px2, py2 + bob);
+            ctx.shadowColor = cols[p.type]; ctx.shadowBlur = 20;
+            ctx.globalAlpha = 0.3 + Math.sin(t * 0.07 + p.bobPhase) * 0.15;
+            ctx.fillStyle = cols[p.type];
+            ctx.beginPath(); ctx.arc(0, 0, 18, 0, Math.PI * 2); ctx.fill();
+            ctx.globalAlpha = 1; ctx.shadowBlur = 0;
+            ctx.font = `${Math.round(gc.height * 0.07)}px serif`;
+            ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+            ctx.fillText(icons[p.type], 0, 0);
+            ctx.restore();
+        }
+
+        function drawFireballs() {
+            fireballs.forEach(fb => {
+                const fx2 = sx(fb.wx);
+                ctx.save();
+                ctx.translate(fx2, fb.y);
+                ctx.shadowColor = '#ff6b35'; ctx.shadowBlur = 16;
+                ctx.font = `${Math.round(gc.height * 0.055)}px serif`;
+                ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+                ctx.fillText('🔥', 0, 0);
+                ctx.restore();
+            });
+        }
+
+        function drawParticles() {
+            particles.forEach(p => {
+                ctx.save(); ctx.globalAlpha = p.life / p.maxLife;
+                ctx.shadowColor = p.col; ctx.shadowBlur = 12; ctx.fillStyle = p.col;
+                ctx.beginPath(); ctx.arc(sx(p.wx), p.y, p.r, 0, Math.PI * 2); ctx.fill();
+                ctx.restore();
+            });
+        }
+
+        function drawBackground() {
+            const grad = ctx.createLinearGradient(0, 0, 0, gc.height);
+            grad.addColorStop(0, '#0d0d1f'); grad.addColorStop(0.5, '#1a1a2e'); grad.addColorStop(1, '#0a0a18');
+            ctx.fillStyle = grad; ctx.fillRect(0, 0, gc.width, gc.height);
+
+            ctx.strokeStyle = 'rgba(74,127,193,0.12)'; ctx.lineWidth = 18;
+            for (let i = 0; i < 6; i++) {
+                const bpx = ((i * 180 - camX * 0.15) % (gc.width + 200)) - 100;
+                ctx.beginPath(); ctx.moveTo(bpx, 0); ctx.lineTo(bpx, gc.height); ctx.stroke();
+            }
+
+            ctx.strokeStyle = 'rgba(0,212,255,0.04)'; ctx.lineWidth = 1;
+            const gs = 40, offX = (-camX * 0.05) % gs;
+            for (let x = offX; x < gc.width; x += gs) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, gc.height); ctx.stroke(); }
+            for (let y = 0; y < gc.height; y += gs) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(gc.width, y); ctx.stroke(); }
+
+            ctx.fillStyle = 'rgba(255,45,85,0.08)';
+            ctx.fillRect(0, wy(0.78) + 6, gc.width, gc.height);
+
+            ctx.fillStyle = '#1e2e4a'; ctx.fillRect(0, 0, gc.width, 10);
+            ctx.strokeStyle = 'rgba(74,127,193,0.3)'; ctx.lineWidth = 3;
+            for (let i = 0; i < gc.width; i += 60) {
+                const cpx = (i - (camX * 0.3) % 60 + 60) % (gc.width + 60) - 30;
+                ctx.beginPath(); ctx.moveTo(cpx, 0); ctx.lineTo(cpx, 18 + Math.sin(cpx * 0.1) * 6); ctx.stroke();
+                ctx.fillStyle = '#2a4a7a'; ctx.beginPath(); ctx.arc(cpx, 18 + Math.sin(cpx * 0.1) * 6, 5, 0, Math.PI * 2); ctx.fill();
+            }
+        }
+
+        function drawFinish() {
+            const fx = sx(WORLD_LEN - 150);
+            if (fx < -80 || fx > gc.width + 10) return;
+            ctx.fillStyle = '#06ffa5'; ctx.shadowColor = '#06ffa5'; ctx.shadowBlur = 30;
+            ctx.fillRect(fx, wy(0.5), 50, wy(0.28)); ctx.shadowBlur = 0;
+            ctx.fillStyle = '#0a3a2a'; ctx.fillRect(fx + 4, wy(0.5) + 4, 42, wy(0.28) - 8);
+            ctx.fillStyle = '#06ffa5';
+            ctx.font = `bold ${Math.round(gc.height * 0.05)}px 'Fredoka One',cursive`;
+            ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+            ctx.fillText('EXIT', fx + 25, wy(0.64));
+            ctx.font = `${Math.round(gc.height * 0.08)}px serif`;
+            ctx.fillText('🚪', fx + 25, wy(0.55));
+        }
+
+        function rRect(x, y, w, h, r) {
+            ctx.beginPath();
+            ctx.moveTo(x + r, y); ctx.lineTo(x + w - r, y);
+            ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+            ctx.lineTo(x + w, y + h - r);
+            ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+            ctx.lineTo(x + r, y + h);
+            ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+            ctx.lineTo(x, y + r);
+            ctx.quadraticCurveTo(x, y, x + r, y);
+            ctx.closePath();
+        }
+
+        // ── Physics ───────────────────────────────────────────
+        // Key change from v1: Runner no longer gets a horizontal boost on jump.
+        // JUMP_BOOST_X is removed. Instead, the world scrolls at SCROLL_SPEED every
+        // frame and Runner is carried with it. This means the player only needs to
+        // decide WHEN to jump — not WHERE to aim. Much more readable and controllable.
+        function updateRunner() {
+            if (runner.dead) return;
+
+            runner.vy += CFG.GRAVITY;
+
+            // SPEED SCALING (replace original horizontal movement)
+            const speedRamp = 1 + (distance / 2000);
+            runner.x += CFG.SCROLL_SPEED * speedRamp;
+
+            // Speed power-up
+            if (activePowerups.speed > 0) runner.x += CFG.SCROLL_SPEED * 0.25;
+
+            // jump buffer decay
+            if (jumpBuffer > 0) jumpBuffer--;
+
+            runner.y += runner.vy;
+            runner.vx *= 0.85;
+
+            runner.squishY += (1 - runner.squishY) * 0.18;
+            runner.squishX += (1 - runner.squishX) * 0.18;
+            if (runner.invincible > 0) runner.invincible--;
+
+            // Platform collisions
+            runner.onGround = false;
+            const feetY = runner.y + runner.h;
+            for (const p of platforms) {
+                const psy = wy(p.yF);
+                const inX = runner.x + runner.w > p.x + 3 && runner.x < p.x + p.w - 3;
+                const wasAbove = (runner.y + runner.h - runner.vy) <= psy + 3;
+                if (inX && wasAbove && feetY >= psy && runner.vy >= 0 && feetY <= psy + 18) {
+                    runner.y = psy - runner.h;
+                    runner.vy = 0;
+                    runner.onGround = true;
+                    runner.jumpsLeft = CFG.DOUBLE_JUMP ? 2 : 1;
+
+                    // NEW: coyote reset
+                    runner.coyoteTimer = 6;
+
+                    // landing squish
+                    runner.squishY = CFG.SQUISH_AMOUNT;
+                    runner.squishX = 1.3;
+
+                    // NEW: landing particles (juice)
+                    if (Math.abs(runner.vy) > 2) {
+                        spawnParticles(
+                            runner.x + runner.w / 2,
+                            runner.y + runner.h,
+                            '#ffffff',
+                            6
+                        );
+                    }
+                    break;
+                }
+            }
+
+            // coyote timer decay
+            if (!runner.onGround) {
+                runner.coyoteTimer--;
+            }
+
+            if (CFG.ASSIST_MODE) {
+                runner.coyoteTimer = Math.max(runner.coyoteTimer, 10);
+                jumpBuffer = Math.max(jumpBuffer, 12);
+            }
+
+            // ── BUFFERED JUMP EXECUTION ────────────────────
+            if (
+                jumpBuffer > 0 &&
+                (
+                    runner.onGround ||
+                    runner.coyoteTimer > 0 ||
+                    runner.jumpsLeft > 0
+                )
+            ) {
+                runner.vy = -CFG.JUMP_FORCE;
+                runner.jumpsLeft--;
+                runner.coyoteTimer = 0;
+                jumpBuffer = 0;
+
+                runner.squishY = 1.35;
+                runner.squishX = 0.75;
+            }
+
+            if (runner.y > gc.height + 60) hitEnemy();
+            if (runner.x < camX + 10) { runner.x = camX + 10; }
+            if (!winFlag && runner.x > WORLD_LEN - 180) { winFlag = true; setTimeout(triggerWin, 500); }
+        }
+
+        // Camera: Runner sits at ~26% from left (was 30% in v1).
+        // This gives ~74% of the screen as look-ahead — the player can see
+        // upcoming platforms and enemies earlier, reducing "surprise" deaths.
+        function updateCamera() {
+            const target = runner.x - gc.width * 0.26;
+            camX += (target - camX) * CFG.CAMERA_LAG;
+            camX = Math.max(0, Math.min(camX, WORLD_LEN - gc.width));
+        }
+
+        function updateEnemies() {
+            enemies.forEach(e => {
+                if (e.frozen > 0) { e.frozen--; return; }
+                e.x += CFG.ENEMY_SPEED * e.dir;
+                if (e.x > e.patrolX + e.patrolW || e.x < e.patrolX) e.dir *= -1;
+                if (runner.invincible === 0 && activePowerups.invincible === 0) {
+                    const esx = sx(e.x), esy = wy(e.yF) - 20;
+                    const rsx = sx(runner.x + runner.w / 2), rsy = runner.y + runner.h / 2;
+
+                    const safeLanding = runner.vy > 0 && runner.y + runner.h < esy;
+
+                    if (
+                        !safeLanding &&
+                        Math.abs(esx - rsx) < CFG.ENEMY_HIT_RADIUS &&
+                        Math.abs(esy - rsy) < CFG.ENEMY_HIT_RADIUS
+                    ) {
+                        hitEnemy();
+                    }
+                }
+            });
+        }
+
+        function updatePickups() {
+            pickups.forEach(p => {
+                if (p.collected) return;
+                const psx = sx(p.x), psy = wy(p.yF);
+                const rsx = sx(runner.x + runner.w / 2), rsy = runner.y + runner.h / 2;
+                if (Math.abs(psx - rsx) < 30 && Math.abs(psy - rsy) < 30) {
+                    p.collected = true;
+                    activatePowerup(p.type);
+                    showPop(p.x, wy(p.yF), puLabel(p.type), puColor(p.type));
+                }
+            });
+        }
+
+        const puLabel = t2 => ({ fire: '🔥 FIREBALL!', freeze: '❄️ FREEZE!', invincible: '⚡ INVINCIBLE!', speed: '💨 SPEED!' }[t2]);
+        const puColor = t2 => ({ fire: '#ff6b35', freeze: '#a0e8ff', invincible: '#ffd60a', speed: '#06ffa5' }[t2]);
+
+        function activatePowerup(type) {
+            const fps = 60;
+            if (type === 'fire') activePowerups.fire = CFG.FIREBALL_DURATION * fps;
+            if (type === 'freeze') { activePowerups.freeze = CFG.FREEZE_DURATION * fps; enemies.forEach(e => e.frozen = CFG.FREEZE_DURATION * fps); }
+            if (type === 'invincible') activePowerups.invincible = CFG.INVINCIBLE_DURATION * fps;
+            if (type === 'speed') activePowerups.speed = 8 * fps;
+            updatePowerupBar();
+        }
+
+        function updatePowerups() {
+            Object.keys(activePowerups).forEach(k => { if (activePowerups[k] > 0) activePowerups[k]--; });
+        }
+
+        function updatePowerupBar() {
+            const bar = document.getElementById('powerup-bar');
+            bar.style.display = ''; bar.innerHTML = '';
+            const labels = { fire: '🔥 Fireball', freeze: '❄️ Freeze', invincible: '⚡ Invincible', speed: '💨 Speed' };
+            Object.entries(activePowerups).forEach(([k, v]) => {
+                if (v > 0) {
+                    const d = document.createElement('div');
+                    d.className = 'pu-indicator'; d.textContent = `${labels[k]} ${Math.ceil(v / 60)}s`;
+                    d.style.color = puColor(k); bar.appendChild(d);
+                }
+            });
+        }
+
+        function updateFireballs() {
+            fireballs.forEach(fb => { fb.wx += CFG.FIREBALL_SPEED; });
+            fireballs.forEach(fb => {
+                enemies.forEach(e => {
+                    if (!e.destroyed && Math.abs(sx(fb.wx) - sx(e.x)) < 20 && Math.abs(fb.y - wy(e.yF)) < 20) {
+                        e.frozen = CFG.FREEZE_DURATION * 60;
+                        spawnParticles(e.x, wy(e.yF), '#ff6b35', 8);
+                        fb.dead = true;
+                        score += CFG.SCORE_PER_FIREBALL;
+                        showPop(e.x, wy(e.yF), `+${CFG.SCORE_PER_FIREBALL} 🔥`, '#ff6b35');
+                        updateHUD2();
+                    }
+                });
+            });
+            fireballs = fireballs.filter(f => !f.dead && sx(f.wx) < gc.width + 60);
+        }
+
+        function updateParticles() {
+            particles.forEach(p => { p.wx += p.vx; p.y += p.vy; p.vy += 0.15; p.life--; });
+            particles = particles.filter(p => p.life > 0);
+        }
+
+        function spawnParticles(wx, y, col, n) {
+            for (let i = 0; i < n; i++) {
+                particles.push({ wx, y, vx: (Math.random() - 0.5) * 4, vy: Math.random() * -3 - 1, col, r: 3 + Math.random() * 4, life: 35, maxLife: 35 });
+            }
+        }
+
+        function hitEnemy() {
+            if (runner.invincible > 0 || activePowerups.invincible > 0) return;
+            lives--;
+            updateHUD2();
+            spawnParticles(runner.x + runner.w / 2, runner.y + runner.h / 2, CFG.RUNNER_COLOR, CFG.PARTICLE_COUNT);
+            if (lives <= 0) { runner.dead = true; setTimeout(triggerDead, 600); return; }
+            runner.invincible = 130;
+            runner.vy = -8;
+            runner.y = GF() - 36;
+            runner.x = Math.max(camX + 50, runner.x - 80);
+        }
+
+        function updateHUD2() {
+            document.getElementById('lives-el').textContent = lives;
+            document.getElementById('score-el').textContent = score;
+            document.getElementById('name-el').textContent = CFG.RUNNER_NAME;
+            document.getElementById('dist-el').textContent = Math.round(distance);
+        }
+
+        function showPop(wx, y, text, col = '#ffd60a') {
+            const pops = document.getElementById('pops');
+            const scX = wrap.clientWidth / gc.width, scY = wrap.clientHeight / gc.height;
+            const div = document.createElement('div');
+            div.className = 'pop'; div.textContent = text; div.style.color = col;
+            div.style.left = (sx(wx) * scX - 30) + 'px'; div.style.top = (y * scY - 14) + 'px';
+            pops.appendChild(div); setTimeout(() => div.remove(), 900);
+        }
+
+        function triggerWin() {
+            state = 'win';
+            document.getElementById('end-title').textContent = '🚪 ESCAPED!';
+            document.getElementById('end-msg').innerHTML = `${CFG.RUNNER_NAME} made it out!<br>Score: <strong>${score}</strong> pts 🏆`;
+            document.getElementById('screen-end').style.display = '';
+        }
+        function triggerDead() {
+            state = 'dead';
+            document.getElementById('end-title').textContent = '⚡ ZAPPED!';
+            document.getElementById('end-msg').innerHTML = `${CFG.RUNNER_NAME} got electrocuted!<br>Score: <strong>${score}</strong> pts`;
+            document.getElementById('screen-end').style.display = '';
+        }
+
+        // Jump: purely vertical now — no horizontal boost.
+        // The player's only input is timing: jump WHEN the gap arrives.
+        function doJump() {
+            if (state !== 'play' || runner.dead) return;
+
+            // buffer input instead of immediate jump
+            jumpBuffer = 8;
+
+            // fireball still works instantly for responsiveness
+            if (activePowerups.fire > 0) {
+                fireballs.push({
+                    wx: runner.x + runner.w,
+                    y: runner.y + runner.h / 2,
+                    dead: false
+                });
+            }
+        }
+
+        gc.addEventListener('click', doJump);
+        gc.addEventListener('touchstart', e => { e.preventDefault(); doJump(); }, { passive: false });
+        document.addEventListener('keydown', e => {
+            if (e.code === 'Space' || e.code === 'ArrowUp') { e.preventDefault(); doJump(); }
+        });
+
+        document.getElementById('btn-start').addEventListener('click', () => {
+            document.getElementById('screen-start').style.display = 'none';
+            initGame();
+        });
+        document.getElementById('btn-restart').addEventListener('click', () => {
+            document.getElementById('screen-end').style.display = 'none';
+            initGame();
+        });
+
+        function initGame() {
+            lives = CFG.LIVES; score = 0; winFlag = false; distance = 0; camX = 0; t = 0;
+            activePowerups = {};
+            buildWorld(); resetRunner();
+            state = 'play';
+            document.getElementById('powerup-bar').style.display = 'none';
+            updateHUD2();
+        }
+
+        function frame() {
+            t++;
+            requestAnimationFrame(frame);
+            ctx.clearRect(0, 0, gc.width, gc.height);
+            drawBackground();
+
+            if (state === 'start') {
+                if (!platforms.length) buildWorld();
+                platforms.forEach(drawPlatform);
+                enemies.forEach(drawEnemy);
+                pickups.forEach(drawPickup);
+                drawFinish();
+                return;
+            }
+
+            platforms.forEach(drawPlatform);
+            enemies.forEach(drawEnemy);
+            pickups.forEach(drawPickup);
+            drawFireballs();
+            drawParticles();
+            drawFinish();
+            drawRunner();
+
+            if (state !== 'play') return;
+
+            updateRunner();
+            updateCamera();
+            updateEnemies();
+            updatePickups();
+            updateFireballs();
+            updateParticles();
+            updatePowerups();
+            updatePowerupBar();
+
+            distance = Math.max(distance, Math.round(runner.x / 20));
+            if (t % 60 === 0) { score++; updateHUD2(); } else updateHUD2();
+        }
+
+        buildWorld();
+        frame();
+    </script>
 </body>
+
 </html>
